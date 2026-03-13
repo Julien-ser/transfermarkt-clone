@@ -125,3 +125,11 @@ drwxr-xr-x  2 julien julien 4096 Mar 13 07:48 project_template
 -rw-r--r--  1 julien julien 2193 Mar 13 07:48 TASKS.md
 -rw-r--r--  1 julien julien 2193 Mar 13 07:48 TASKS_original.md
 [0m
+[0m→ [0mRead TASKS.md
+[0m→ [0mRead README.md
+[0m
+[0m$ [0mmkdir -p docs prisma apps/web
+Now I'll create the database schema. First, let me define the Prisma schema:
+[0m✗ [0mwrite failed
+[91m[1mError: [0mYou must read file /home/julien/Desktop/Free-Wiggum-opencode/projects/transfermarkt-clone/prisma/schema.prisma before overwriting it. Use the Read tool first
+[0m→ [0mRead prisma/schema.prisma

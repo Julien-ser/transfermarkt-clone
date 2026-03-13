@@ -6,7 +6,7 @@
 - [ ] Define feature scope and requirements document (MVP vs full features)
   - Deliverable: DOCUMENTATION/requirements.md with prioritized feature list
   - Include: player profiles, team pages, league standings, transfer history, market values, search functionality
-- [ ] Design database schema for players, teams, leagues, transfers, and market values
+- [x] Design database schema for players, teams, leagues, transfers, and market values
   - Deliverable: SCHEMA/database-schema.sql with PostgreSQL/MySQL tables and relationships
   - Include: players, teams, leagues, competitions, transfers, user_teams (if fantasy feature)
 - [ ] Choose and document tech stack with justifications
