@@ -1,9 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Card } from "@/components/ui/Card";
-import { Button } from "@/components/ui/Button";
+import { Card, Button } from "ui";
 
 interface Competition {
   id: number;
@@ -16,13 +15,32 @@ interface Competition {
   logoUrl?: string | null;
 }
 
-interface FeaturedLeaguesCarouselProps {
-  competitions: Competition[];
-}
-
-export function FeaturedLeaguesCarousel({ competitions }: FeaturedLeaguesCarouselProps) {
+export function FeaturedLeaguesCarousel() {
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [scrollPosition, setScrollPosition] = useState(0);
   const scrollAmount = 300;
+
+  useEffect(() => {
+    const fetchCompetitions = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch("/api/competitions?limit=8&sortBy=name&sortOrder=asc");
+        if (!response.ok) {
+          throw new Error("Failed to fetch competitions");
+        }
+        const data = await response.json();
+        setCompetitions(data.competitions || []);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Unknown error");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCompetitions();
+  }, []);
 
   const handleScroll = (direction: 'left' | 'right') => {
     const container = document.getElementById('leagues-carousel');
@@ -34,6 +52,38 @@ export function FeaturedLeaguesCarousel({ competitions }: FeaturedLeaguesCarouse
       setScrollPosition(newPosition);
     }
   };
+
+  if (loading) {
+    return (
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-8">Featured Leagues</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <Card key={i} className="p-4 animate-pulse">
+                <div className="flex flex-col items-center space-y-3">
+                  <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                  <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-8">Featured Leagues</h2>
+          <div className="text-red-600 dark:text-red-400">Error loading competitions: {error}</div>
+        </div>
+      </section>
+    );
+  }
 
   if (competitions.length === 0) {
     return null;
@@ -49,8 +99,8 @@ export function FeaturedLeaguesCarousel({ competitions }: FeaturedLeaguesCarouse
         <div className="relative">
           {/* Left Arrow */}
           <Button
-            variant="outlined"
-            size="icon"
+            variant="outline"
+            size="small"
             onClick={() => handleScroll('left')}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg"
             aria-label="Scroll left"
@@ -122,8 +172,8 @@ export function FeaturedLeaguesCarousel({ competitions }: FeaturedLeaguesCarouse
 
           {/* Right Arrow */}
           <Button
-            variant="outlined"
-            size="icon"
+            variant="outline"
+            size="small"
             onClick={() => handleScroll('right')}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white dark:bg-gray-800 shadow-lg"
             aria-label="Scroll right"

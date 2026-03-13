@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Input } from "@/components/ui/Input";
-import { Button } from "@/components/ui/Button";
+import { Input, Button } from "ui";
 
 export function SearchBar() {
   const [searchQuery, setSearchQuery] = useState("");

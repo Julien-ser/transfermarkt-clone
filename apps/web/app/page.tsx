@@ -3,6 +3,10 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { SearchBar } from "@/components/home/SearchBar";
+import { FeaturedLeaguesCarousel } from "@/components/home/FeaturedLeaguesCarousel";
+import { LatestTransfersTable } from "@/components/home/LatestTransfersTable";
+import { MarketValueLeaders } from "@/components/home/MarketValueLeaders";
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -74,66 +78,21 @@ export default function HomePage() {
             <p className="mt-6 max-w-2xl mx-auto text-xl">
               The ultimate platform for football transfer news, player market values, and statistics.
             </p>
-            <div className="mt-10 max-w-md mx-auto">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search players, clubs, leagues..."
-                  className="w-full px-4 py-3 rounded-lg text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 py-1 rounded">
-                  Search
-                </button>
-              </div>
+            <div className="mt-10 max-w-3xl mx-auto">
+              <SearchBar />
             </div>
           </div>
         </div>
       </div>
 
+      {/* Featured Leagues Carousel */}
+      <FeaturedLeaguesCarousel />
+
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Latest Transfers */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">Latest Transfers</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Stay updated with the latest player movements from top leagues around the world.
-            </p>
-            <Link
-              href="/transfers"
-              className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium"
-            >
-              View all transfers →
-            </Link>
-          </div>
-
-          {/* Market Values */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">Market Values</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Explore current market valuations and trends for players worldwide.
-            </p>
-            <Link
-              href="/players"
-              className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium"
-            >
-              Browse players →
-            </Link>
-          </div>
-
-          {/* Leagues */}
-          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-            <h3 className="text-xl font-bold mb-4">Leagues & Clubs</h3>
-            <p className="text-gray-600 dark:text-gray-400">
-              Detailed standings, squad information, and club statistics.
-            </p>
-            <Link
-              href="/leagues"
-              className="inline-block mt-4 text-blue-600 hover:text-blue-800 font-medium"
-            >
-              View leagues →
-            </Link>
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <LatestTransfersTable />
+          <MarketValueLeaders />
         </div>
 
         {session && (

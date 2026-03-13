@@ -126,11 +126,36 @@ Build a feature-rich platform that provides:
     - `apps/web/app/api/clubs/[id]/route.ts` - Club get + update + delete (with cache)
     - `apps/web/app/api/competitions/route.ts` - Competition list + create (with cache)
     - `apps/web/app/api/competitions/[id]/route.ts` - Competition get + update + delete (with cache)
-- [x] **Create data seeding scripts with sample football data** ✅ Complete
-  - ✅ Comprehensive seed with realistic sample data for testing
-  - ✅ Includes: positions, countries, clubs, players, stats, transfers
-  - ✅ Run: `pnpm db:seed` (requires PostgreSQL running)
-- [x] **Implement caching strategy with Redis** ✅ Complete
+   - [x] **Create data seeding scripts with sample football data** ✅ Complete
+   - ✅ Comprehensive seed with realistic sample data for testing
+   - ✅ Includes: positions, countries, clubs, players, stats, transfers
+   - ✅ Run: `pnpm db:seed` (requires PostgreSQL running)
+   - [x] **Implement caching strategy with Redis** ✅ Complete
+   - ✅ Redis integration with ioredis client and connection pooling
+   - ✅ Cache helper with TTL management and pattern invalidation
+   - ✅ Cached data: league standings, player market values, team rosters
+   - ✅ Optimized endpoints: players list, player detail, clubs list, club detail, competitions list, competition detail, league standings
+   - ✅ Automatic cache invalidation on mutations (create/update/delete)
+   - ✅ Pattern-based invalidation for related data consistency
+   - 📝 **Configuration**: `REDIS_URL` in `.env` (default: `redis://localhost:6379`)
+   - 📝 **Files**:
+     - `apps/web/lib/cache.ts` - Cache client and helpers
+     - `apps/web/app/api/competitions/[id]/standings/route.ts` - Standings endpoint with caching
+     - Updated API routes with cache invalidation logic
+
+### Phase 3: Frontend Development - Core Pages & Components
+- [x] **Build homepage with featured leagues, latest transfers, and search bar** ✅ Complete
+  - ✅ Responsive layout with hero section and integrated search
+  - ✅ Featured leagues carousel with navigation arrows and club logos
+  - ✅ Latest transfers table with infinite scroll pagination
+  - ✅ Market value leaders table showing top players
+  - ✅ Client-side data fetching with loading and error states
+  - 📝 **Files**:
+    - `apps/web/app/page.tsx` - Main homepage component
+    - `apps/web/components/home/FeaturedLeaguesCarousel.tsx` - Leagues carousel
+    - `apps/web/components/home/LatestTransfersTable.tsx` - Transfers table with infinite scroll
+    - `apps/web/components/home/MarketValueLeaders.tsx` - Top market value players
+    - `apps/web/components/home/SearchBar.tsx` - Global search component
   - ✅ Redis integration with ioredis client and connection pooling
   - ✅ Cache helper with TTL management and pattern invalidation
   - ✅ Cached data: league standings, player market values, team rosters
@@ -420,4 +445,4 @@ MIT
 
 ---
 
-**Status**: Phase 1 in progress - Database schema complete ✅
+**Status**: Phase 3 in progress - Homepage complete ✅

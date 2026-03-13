@@ -91,7 +91,7 @@
   - Files: packages/ui/src/{Avatar,Badge,Button,Card,Input,Modal,Select,Table,Tabs}.tsx
   - Package configuration: tsconfig.json, package.json, exports from index.ts
   - Verified: Type-check passes successfully
-- [ ] Build homepage with featured leagues, latest transfers, and search bar
+- [x] Build homepage with featured leagues, latest transfers, and search bar
   - Deliverable: apps/web/app/page.tsx with responsive layout
   - Sections: hero with search, top leagues carousel, latest transfers table, market value leaders
   - Features: client-side search autocomplete, infinite scroll for transfers

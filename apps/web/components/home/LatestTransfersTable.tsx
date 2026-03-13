@@ -2,8 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
-import { Table } from "@/components/ui/Table";
-import { Card } from "@/components/ui/Card";
+import { Table, Card } from "ui";
 import { formatTransferFee, formatDate } from "@/lib/format";
 
 interface Transfer {

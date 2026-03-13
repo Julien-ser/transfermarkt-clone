@@ -23,7 +23,7 @@ export interface TableColumn<T> {
   ariaLabel?: string;
 }
 
-export interface TableProps<T extends Record<string, unknown>> {
+export interface TableProps<T extends object> {
   /**
    * Array of data rows
    */
