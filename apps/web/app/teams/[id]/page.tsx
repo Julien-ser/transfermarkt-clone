@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useMemo } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Card, Tabs, Badge, Avatar, Table, Select, Button } from "ui";
 import { formatDate } from "@/lib/format";
@@ -146,6 +147,7 @@ interface TeamPageProps {
 }
 
 export default function TeamPage({ params }: TeamPageProps) {
+  const { data: session } = useSession();
   const [team, setTeam] = useState<TeamData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -155,6 +157,8 @@ export default function TeamPage({ params }: TeamPageProps) {
     key: keyof Player | 'jerseyNumber' | 'marketValue' | 'age';
     direction: 'asc' | 'desc';
   }>({ key: 'jerseyNumber', direction: 'asc' });
+  const [isInWatchlist, setIsInWatchlist] = useState<boolean>(false);
+  const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
 
   const fetchTeam = useCallback(async () => {
     try {
@@ -178,11 +182,63 @@ export default function TeamPage({ params }: TeamPageProps) {
     }
   }, [params.id]);
 
-  useEffect(() => {
-    fetchTeam();
-  }, [fetchTeam]);
+   useEffect(() => {
+     fetchTeam();
+   }, [fetchTeam]);
 
-  const positionCategories = useMemo(() => {
+   // Check if team is in watchlist
+   useEffect(() => {
+     if (session && team) {
+       checkWatchlistStatus();
+     }
+   }, [session, team]);
+
+   const checkWatchlistStatus = async () => {
+     if (!team) return;
+     try {
+       const response = await fetch("/api/watchlist");
+       if (response.ok) {
+         const data = await response.json();
+         const isInList = data.clubs?.some((c: any) => c.id === team.id);
+         setIsInWatchlist(isInList || false);
+       }
+     } catch (error) {
+       console.error("Failed to check watchlist status:", error);
+     }
+   };
+
+   const toggleWatchlist = async () => {
+     if (!session) {
+       window.location.href = "/login";
+       return;
+     }
+
+     if (!team) return;
+
+     setWatchlistLoading(true);
+     try {
+       const response = await fetch("/api/watchlist", {
+         method: "POST",
+         headers: {
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({ type: "club", id: team.id }),
+       });
+
+       if (response.ok) {
+         setIsInWatchlist(!isInWatchlist);
+       } else {
+         alert("Failed to update watchlist");
+       }
+     } catch (error) {
+       console.error("Failed to toggle watchlist:", error);
+       alert("An error occurred");
+     } finally {
+       setWatchlistLoading(false);
+     }
+   };
+
+   const positionCategories = useMemo(() => {
     if (!team) return [];
     const positions = new Set(
       team.currentPlayers
@@ -360,10 +416,39 @@ export default function TeamPage({ params }: TeamPageProps) {
                       {team.stadiumName}
                     </Badge>
                   )}
-                </div>
-              </div>
+                 </div>
+               </div>
 
-              {/* Squad Stats */}
+               {/* Watchlist Button */}
+               {session && (
+                 <div className="mt-2 md:mt-0 md:ml-4">
+                   <button
+                     onClick={toggleWatchlist}
+                     disabled={watchlistLoading}
+                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                       isInWatchlist
+                         ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300"
+                         : "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+                     }`}
+                   >
+                     {watchlistLoading ? (
+                       <span className="flex items-center">
+                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                         </svg>
+                         Loading...
+                       </span>
+                     ) : isInWatchlist ? (
+                       "Remove from Watchlist"
+                     ) : (
+                       "Add to Watchlist"
+                     )}
+                   </button>
+                 </div>
+               )}
+
+               {/* Squad Stats */}
               <div className="text-right space-y-2">
                 <div className="text-sm text-gray-600 dark:text-gray-400">Squad Size</div>
                 <div className="text-2xl font-bold text-gray-900 dark:text-white">
