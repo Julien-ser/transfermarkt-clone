@@ -2,9 +2,9 @@ import React from 'react';
 
 export interface TableColumn<T> {
   /**
-   * Unique key for the column
+   * Unique key for the column (must be a key of T)
    */
-  key: string;
+  key: keyof T & string;
   /**
    * Column header text
    */
@@ -36,7 +36,7 @@ export interface TableProps<T extends object> {
    * Key field to uniquely identify rows
    * @default 'id'
    */
-  rowKey?: keyof T;
+  rowKey?: keyof T & string;
   /**
    * Whether the table is striped (alternating row colors)
    * @default false
@@ -90,10 +90,10 @@ export interface TableProps<T extends object> {
  * />
  * ```
  */
-export function Table<T extends Record<string, unknown>>({
+export function Table<T extends object>({
   data,
   columns,
-  rowKey = 'id' as keyof T,
+  rowKey = 'id' as keyof T & string,
   striped = false,
   hoverable = false,
   loading = false,
@@ -165,7 +165,7 @@ export function Table<T extends Record<string, unknown>>({
             : data.map((row, index) => (
                 <tr
                   key={String(row[rowKey] ?? index)}
-                   className={`${getRowStyle(index)} ${hoverable ? 'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150' : ''}`}
+                  className={`${getRowStyle(index)} ${hoverable ? 'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150' : ''}`}
                   role="row"
                 >
                   {columns.map((column) => (

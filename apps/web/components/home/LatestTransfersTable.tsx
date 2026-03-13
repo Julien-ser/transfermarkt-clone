@@ -117,7 +117,7 @@ export function LatestTransfersTable() {
     {
       key: 'player',
       header: 'Player',
-      render: (value: unknown, row: Transfer) => (
+      render: (_value: unknown, row: Transfer) => (
         <div className="flex items-center">
           {row.player.imageUrl ? (
             <div className="relative w-10 h-10 mr-3">
@@ -152,7 +152,7 @@ export function LatestTransfersTable() {
     {
       key: 'fromClub',
       header: 'From',
-      render: (value: unknown, row: Transfer) => (
+      render: (_value: unknown, row: Transfer) => (
         <Link 
           href={`/teams/${row.fromClub.id}`}
           className="hover:text-blue-600 dark:hover:text-blue-400"
@@ -176,7 +176,7 @@ export function LatestTransfersTable() {
     {
       key: 'toClub',
       header: 'To',
-      render: (value: unknown, row: Transfer) => (
+      render: (_value: unknown, row: Transfer) => (
         <Link 
           href={`/teams/${row.toClub.id}`}
           className="hover:text-blue-600 dark:hover:text-blue-400"
@@ -200,7 +200,7 @@ export function LatestTransfersTable() {
     {
       key: 'transferDate',
       header: 'Date',
-      render: (value: unknown, row: Transfer) => (
+      render: (_value: unknown, row: Transfer) => (
         <span className="text-gray-600 dark:text-gray-400">
           {formatDate(row.transferDate)}
         </span>
@@ -209,7 +209,7 @@ export function LatestTransfersTable() {
     {
       key: 'fee',
       header: 'Fee',
-      render: (value: unknown, row: Transfer) => (
+      render: (_value: unknown, row: Transfer) => (
         <span className={`font-medium ${
           row.fee ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'
         }`}>
