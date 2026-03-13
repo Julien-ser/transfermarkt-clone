@@ -1927,3 +1927,14 @@ Wrote file successfully.
 [0m$ [0mmkdir -p packages/{ui,types,utils} apps/api
 Now let me create the complete monorepo structure. I'll create the packages directories and initialize them with basic package.json files:
 📝 Log saved: logs/iteration-3.md
+📊 Token Usage: 7250 / Session: 26250 / 64000
+Unstaged changes after reset:
+M	logs/worker-session-20260313-074851.log
+✅ Changes committed
+To https://github.com/Julien-ser/transfermarkt-clone.git
+   ff56b04..12c958e  main -> main
+✅ Pushed to GitHub
+📊 Updated Tasks: 3/21 completed, 18 remaining
+   Next task: Initialize monorepo structure with frontend and backend pack...
+📝 Log saved: logs/iteration-4.md
+📊 Token Usage: 4750 / Session: 29250 / 64000
