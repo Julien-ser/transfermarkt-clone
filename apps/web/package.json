@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently -n \"next,cron\" -c \"blue,green\" \"next dev\" \"tsx scripts/cron-runner.ts\"",
     "build": "next build",
     "start": "next start",
     "lint": "eslint . --ext .ts,.tsx",
@@ -34,6 +34,7 @@
     "@types/react": "^18.2.43",
     "@types/react-dom": "^18.2.17",
     "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
     "eslint": "^8.55.0",
     "eslint-config-next": "^14.0.4",
     "jest": "^29.7.0",
