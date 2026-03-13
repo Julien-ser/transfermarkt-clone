@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { playerSearchSchema, playerSchema } from "@/lib/validations";
+import { withCache, CACHE_TTL, generateCacheKey, cache } from "@/lib/cache";
 
 const prisma = new PrismaClient();
 
@@ -14,78 +15,104 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const validatedSearch = playerSearchSchema.parse(search);
 
-    // Build where clause for filtering
-    const where: any = {};
-
-    if (search.name) {
-      where.OR = [
-        { firstName: { contains: search.name, mode: "insensitive" } },
-        { lastName: { contains: search.name, mode: "insensitive" } },
-        { fullName: { contains: search.name, mode: "insensitive" } },
-      ];
-    }
-
-    if (search.positionId) {
-      where.positionId = search.positionId;
-    }
-
-    if (search.nationalityId) {
-      where.nationalityId = search.nationalityId;
-    }
-
-    if (search.currentClubId) {
-      where.currentClubId = search.currentClubId;
-    }
-
-    if (search.minMarketValue !== undefined || search.maxMarketValue !== undefined) {
-      where.marketValue = {};
-      if (search.minMarketValue) {
-        where.marketValue.gte = search.minMarketValue;
-      }
-      if (search.maxMarketValue) {
-        where.marketValue.lte = search.maxMarketValue;
-      }
-    }
-
-    // Build orderBy
-    const orderBy: any = {};
-    if (validatedSearch.sortBy) {
-      orderBy[validatedSearch.sortBy] = validatedSearch.sortOrder;
-    }
-
-    // Calculate pagination
-    const skip = (validatedSearch.page - 1) * validatedSearch.limit;
-
-    // Fetch players with pagination, sorting, and includes
-    const [players, total] = await Promise.all([
-      prisma.player.findMany({
-        where,
-        include: {
-          nationality: true,
-          position: true,
-          currentClub: {
-            include: {
-              country: true,
-            },
-          },
-          birthPlace: true,
-        },
-        orderBy,
-        skip,
-        take: validatedSearch.limit,
-      }),
-      prisma.player.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      players,
-      pagination: {
-        page: validatedSearch.page,
-        limit: validatedSearch.limit,
-        total,
-        totalPages: Math.ceil(total / validatedSearch.limit),
-      },
+    // Generate cache key based on query parameters
+    const cacheKey = generateCacheKey("players", {
+      page: validatedSearch.page,
+      limit: validatedSearch.limit,
+      name: search.name || "",
+      positionId: search.positionId || "",
+      nationalityId: search.nationalityId || "",
+      currentClubId: search.currentClubId || "",
+      minMarketValue: search.minMarketValue || "",
+      maxMarketValue: search.maxMarketValue || "",
+      sortBy: validatedSearch.sortBy || "",
+      sortOrder: validatedSearch.sortOrder || "",
     });
+
+    // Try to get from cache first
+    const { data, fromCache } = await withCache(
+      cacheKey,
+      CACHE_TTL.PLAYERS_LIST,
+      async () => {
+        // Build where clause for filtering
+        const where: any = {};
+
+        if (search.name) {
+          where.OR = [
+            { firstName: { contains: search.name, mode: "insensitive" } },
+            { lastName: { contains: search.name, mode: "insensitive" } },
+            { fullName: { contains: search.name, mode: "insensitive" } },
+          ];
+        }
+
+        if (search.positionId) {
+          where.positionId = search.positionId;
+        }
+
+        if (search.nationalityId) {
+          where.nationalityId = search.nationalityId;
+        }
+
+        if (search.currentClubId) {
+          where.currentClubId = search.currentClubId;
+        }
+
+        if (search.minMarketValue !== undefined || search.maxMarketValue !== undefined) {
+          where.marketValue = {};
+          if (search.minMarketValue) {
+            where.marketValue.gte = search.minMarketValue;
+          }
+          if (search.maxMarketValue) {
+            where.marketValue.lte = search.maxMarketValue;
+          }
+        }
+
+        // Build orderBy
+        const orderBy: any = {};
+        if (validatedSearch.sortBy) {
+          orderBy[validatedSearch.sortBy] = validatedSearch.sortOrder;
+        }
+
+        // Calculate pagination
+        const skip = (validatedSearch.page - 1) * validatedSearch.limit;
+
+        // Fetch players with pagination, sorting, and includes
+        const [players, total] = await Promise.all([
+          prisma.player.findMany({
+            where,
+            include: {
+              nationality: true,
+              position: true,
+              currentClub: {
+                include: {
+                  country: true,
+                },
+              },
+              birthPlace: true,
+            },
+            orderBy,
+            skip,
+            take: validatedSearch.limit,
+          }),
+          prisma.player.count({ where }),
+        ]);
+
+        return {
+          players,
+          pagination: {
+            page: validatedSearch.page,
+            limit: validatedSearch.limit,
+            total,
+            totalPages: Math.ceil(total / validatedSearch.limit),
+          },
+          cached: false,
+        };
+      }
+    );
+
+    // Add cache metadata to response
+    const response = { ...data, fromCache };
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Players fetch error:", error);
     return NextResponse.json(
@@ -93,6 +120,7 @@ export async function GET(request: NextRequest) {
       { status: error instanceof Error && error.message.includes("Invalid") ? 400 : 500 }
     );
   }
+}
 }
 
 export async function POST(request: NextRequest) {
