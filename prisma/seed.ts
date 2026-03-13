@@ -47,6 +47,40 @@ async function main() {
   }
   console.log('✓ Created countries')
 
+  // Create demo user for authentication testing
+  const demoPasswordHash = await bcrypt.hash('password123', 10)
+  const adminPasswordHash = await bcrypt.hash('admin123', 10)
+
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'demo@example.com' },
+    update: {},
+    create: {
+      email: 'demo@example.com',
+      name: 'Demo User',
+      passwordHash: demoPasswordHash,
+      role: 'USER',
+      isActive: true,
+      isVerified: true,
+    },
+  })
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      name: 'Admin User',
+      passwordHash: adminPasswordHash,
+      role: 'ADMIN',
+      isActive: true,
+      isVerified: true,
+    },
+  })
+
+  console.log('✓ Created demo users')
+  console.log('  - Demo user: demo@example.com / password123')
+  console.log('  - Admin user: admin@example.com / admin123')
+
   // Get countries
   const england = await prisma.country.findFirst({ where: { name: 'England' } })
   const spain = await prisma.country.findFirst({ where: { name: 'Spain' } })
