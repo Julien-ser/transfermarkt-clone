@@ -9,7 +9,7 @@
 - [x] Design database schema for players, teams, leagues, transfers, and market values
   - Deliverable: SCHEMA/database-schema.sql with PostgreSQL/MySQL tables and relationships
   - Include: players, teams, leagues, competitions, transfers, user_teams (if fantasy feature)
-- [ ] Choose and document tech stack with justifications
+- [x] Choose and document tech stack with justifications
   - Deliverable: ARCHITECTURE/tech-stack.md specifying:
     - Frontend: Next.js 14 (App Router) + React 18 + TypeScript + Tailwind CSS
     - Backend: Next.js API routes (or standalone Express/FastAPI)

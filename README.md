@@ -45,7 +45,9 @@ Build a feature-rich platform that provides:
 ├── prisma/               # Database schema & migrations
 │   ├── schema.prisma     # Prisma schema definition
 │   └── database-schema.sql  # Raw SQL schema (reference)
-├── SCHEMA/               # Architecture documentation
+├── ARCHITECTURE/         # Architecture documentation
+│   └── tech-stack.md     # Tech stack decisions and justifications
+├── SCHEMA/               # Database schema documentation
 │   ├── ER-diagram.md     # Entity relationship diagram
 │   └── database-schema.sql # SQL migrations
 ├── docs/                 # Project documentation
@@ -67,7 +69,11 @@ Build a feature-rich platform that provides:
   - Full documentation with enums and constraints
   - [View Schema Documentation →](./docs/database-schema.md)
   - [View Prisma Schema →](./prisma/schema.prisma)
-- [ ] Choose and document tech stack with justifications
+- [x] Choose and document tech stack with justifications ✅
+  - Comprehensive tech stack documentation with justifications for each technology
+  - Frontend, backend, database, and infrastructure decisions documented
+  - [View Tech Stack →](./ARCHITECTURE/tech-stack.md)
+  - [View Architecture Docs →](./ARCHITECTURE/)
 - [ ] Initialize monorepo structure with frontend and backend packages
 
 ## 🔧 Prerequisites
