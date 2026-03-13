@@ -3,10 +3,72 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Suspense, lazy } from "react";
 import { SearchBar } from "@/components/home/SearchBar";
-import { FeaturedLeaguesCarousel } from "@/components/home/FeaturedLeaguesCarousel";
-import { LatestTransfersTable } from "@/components/home/LatestTransfersTable";
-import { MarketValueLeaders } from "@/components/home/MarketValueLeaders";
+import { Card } from "ui";
+
+// Dynamic imports for below-the-fold components
+const FeaturedLeaguesCarousel = lazy(() => 
+  import("@/components/home/FeaturedLeaguesCarousel").then(mod => ({ default: mod.FeaturedLeaguesCarousel }))
+);
+const LatestTransfersTable = lazy(() => 
+  import("@/components/home/LatestTransfersTable").then(mod => ({ default: mod.LatestTransfersTable }))
+);
+const MarketValueLeaders = lazy(() => 
+  import("@/components/home/MarketValueLeaders").then(mod => ({ default: mod.MarketValueLeaders }))
+);
+
+// Loading skeleton components
+function FeaturedLeaguesCarouselSkeleton() {
+  return (
+    <section className="py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold mb-8">Featured Leagues</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 8 }).map((_, i) => (
+            <Card key={i} className="p-4 animate-pulse">
+              <div className="flex flex-col items-center space-y-3">
+                <div className="w-16 h-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-20"></div>
+                <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function LatestTransfersTableSkeleton() {
+  return (
+    <Card className="p-6">
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function MarketValueLeadersSkeleton() {
+  return (
+    <Card className="p-6">
+      <div className="animate-pulse space-y-4">
+        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          ))}
+        </div>
+      </div>
+    </Card>
+  );
+}
 
 export default function HomePage() {
   const { data: session, status } = useSession();
@@ -86,13 +148,19 @@ export default function HomePage() {
       </div>
 
       {/* Featured Leagues Carousel */}
-      <FeaturedLeaguesCarousel />
+      <Suspense fallback={<FeaturedLeaguesCarouselSkeleton />}>
+        <FeaturedLeaguesCarousel />
+      </Suspense>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <LatestTransfersTable />
-          <MarketValueLeaders />
+          <Suspense fallback={<LatestTransfersTableSkeleton />}>
+            <LatestTransfersTable />
+          </Suspense>
+          <Suspense fallback={<MarketValueLeadersSkeleton />}>
+            <MarketValueLeaders />
+          </Suspense>
         </div>
 
         {session && (
