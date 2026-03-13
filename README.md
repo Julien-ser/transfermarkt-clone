@@ -89,6 +89,31 @@ Build a feature-rich platform that provides:
   - ✅ Database configuration in .env ready
   - ✅ Automated setup script (setup-database.sh)
   - 📝 **Next step**: Install PostgreSQL and run `./setup-database.sh` to initialize database
+- [x] **Implement authentication system with NextAuth.js** ✅ Complete
+  - ✅ Email/password authentication with bcrypt password hashing
+  - ✅ Google OAuth integration (requires Google Cloud credentials)
+  - ✅ Session management with JWT strategy
+  - ✅ Complete auth flow: registration, login, logout, password reset
+  - ✅ Protected routes and API endpoints
+  - ✅ User watchlist functionality (players and clubs)
+  - 📝 **Files**:
+    - `apps/web/lib/auth.ts` - NextAuth configuration
+    - `apps/web/app/api/auth/[...nextauth]/route.ts` - Auth API handler
+    - `apps/web/app/api/auth/register/route.ts` - Registration endpoint
+    - `apps/web/app/api/auth/forgot-password/route.ts` - Password reset request
+    - `apps/web/app/api/auth/reset-password/route.ts` - Password reset confirmation
+    - `apps/web/app/api/watchlist/route.ts` - User watchlist CRUD
+    - `apps/web/components/auth/*` - Auth UI components
+    - `apps/web/app/login/page.tsx` - Login page
+    - `apps/web/app/register/page.tsx` - Registration page
+    - `apps/web/app/forgot-password/page.tsx` - Forgot password page
+    - `apps/web/app/reset-password/page.tsx` - Reset password page
+    - `apps/web/app/watchlist/page.tsx` - User watchlist page
+  - 📝 **Environment Variables** (see `.env.example`):
+    - `GOOGLE_CLIENT_ID` - Google OAuth client ID (optional)
+    - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (optional)
+    - `NEXTAUTH_SECRET` - Secret key for JWT signing (required)
+    - `NEXTAUTH_URL` - Application URL (e.g., http://localhost:3000)
 
 ## 🔧 Prerequisites
 

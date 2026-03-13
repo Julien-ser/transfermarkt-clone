@@ -92,6 +92,7 @@ model Club {
   seasons         ClubSeason[]
   competitions   ClubCompetition[]
   players        PlayerClub[]
+  currentPlayers Player[] @relation("CurrentClubPlayers")
   transfersFrom  Transfer[] @relation("FromClub")
   transfersTo    Transfer[] @relation("ToClub")
   homeMatches    Match[]     @relation("HomeClub")
@@ -130,6 +131,8 @@ model Player {
 
   // Relations
   clubs             PlayerClub[]
+  currentClub       Club?    @relation("CurrentClubPlayers", fields: [currentClubId], references: [id])
+  currentClubId     Int?
   transfers        Transfer[]
   stats            PlayerStats[]
   marketValues     MarketValue[]

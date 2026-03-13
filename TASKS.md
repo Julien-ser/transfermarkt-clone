@@ -43,7 +43,7 @@
   - Generated: Prisma Client successfully compiled
   - Setup script: setup-database.sh automates the entire database setup process
   - Note: PostgreSQL needs to be installed and running. Run `./setup-database.sh` after installing PostgreSQL.
-- [ ] Implement authentication system with NextAuth.js or JWT
+- [x] Implement authentication system with NextAuth.js or JWT
   - Deliverable: Complete auth flow: sign up, login, logout, password reset
   - Features: email/password, OAuth (Google), session management, protected routes
   - Files: apps/web/components/auth/*, apps/api/route/auth/* (if standalone backend)
