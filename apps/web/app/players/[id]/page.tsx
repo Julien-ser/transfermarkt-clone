@@ -1,20 +1,28 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense, lazy } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
-import { Card, Tabs, Badge, Avatar, Table } from "ui";
+import dynamic from "next/dynamic";
+import { Card, Tabs, Badge, Avatar } from "ui";
 import { formatMarketValue, formatDate, getMarketValueChangeIndicator } from "@/lib/format";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-} from "recharts";
+
+// Lazy load heavy components with dynamic imports
+const MarketValueChart = dynamic(
+  () => import("@/components/charts/MarketValueChart").then(mod => ({ default: mod.MarketValueChart })),
+  { 
+    loading: () => <div className="h-80 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse"></div>,
+    ssr: false 
+  }
+);
+
+const StatsTable = dynamic(
+  () => import("@/components/tables/StatsTable").then(mod => ({ default: mod.StatsTable })),
+  {
+    loading: () => <div className="h-64 bg-gray-100 dark:bg-gray-700 rounded-lg animate-pulse"></div>,
+    ssr: false
+  }
+);
 
 interface PlayerStats {
   id: number;
