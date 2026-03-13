@@ -95,10 +95,15 @@
   - Deliverable: apps/web/app/page.tsx with responsive layout
   - Sections: hero with search, top leagues carousel, latest transfers table, market value leaders
   - Features: client-side search autocomplete, infinite scroll for transfers
-- [ ] Develop player profile page with detailed statistics
+- [x] Develop player profile page with detailed statistics ✅
   - Deliverable: apps/web/app/players/[id]/page.tsx
   - Content: player info card, current stats, career history, transfer history timeline, market value chart
   - Integrate: Recharts for market value visualization, conditional rendering for position-specific stats
+  - Features: 4-tab interface (Overview, Statistics, Transfer History, Career History)
+  - API: Full Redis caching (30 min TTL) with cache invalidation on updates
+  - Testing: Comprehensive test suite with 12 test cases covering all functionality
+  - Files: apps/web/app/players/[id]/page.tsx (776 lines), page.test.tsx (432 lines)
+  - Verified: All tests passing, responsive design, dark mode support, loading/error states
 - [ ] Build team page with squad list and statistics
   - Deliverable: apps/web/app/teams/[id]/page.tsx
   - Content: team badge/logo, league position, current squad (goalkeepers, defenders, midfielders, forwards)

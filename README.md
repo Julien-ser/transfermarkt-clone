@@ -167,6 +167,31 @@ Build a feature-rich platform that provides:
     - `apps/web/lib/cache.ts` - Cache client and helpers
     - `apps/web/app/api/competitions/[id]/standings/route.ts` - Standings endpoint with caching
     - Updated API routes with cache invalidation logic
+- [x] **Develop player profile page with detailed statistics** ✅ Complete
+  - ✅ Comprehensive player profile with detailed statistics and market value tracking
+  - ✅ Multi-tab interface: Overview, Statistics, Transfer History, Career History
+  - ✅ Market value chart using Recharts with interactive tooltips
+  - ✅ Position-specific stats (Goalkeeper, Defender, Midfielder, Forward)
+  - ✅ Transfer timeline with club logos, fees, and loan details
+  - ✅ Career history table with season-by-season breakdown
+  - ✅ Full responsive design with dark mode support
+  - ✅ Loading states and error handling
+  - ✅ API integration with Redis caching (30 min TTL)
+  - 📝 **Files**:
+    - `apps/web/app/players/[id]/page.tsx` (776 lines) - Main player profile component
+    - `apps/web/app/players/[id]/page.test.tsx` (432 lines) - Comprehensive test suite
+    - `apps/web/app/api/players/[id]/route.ts` - Player API with caching
+  - 📝 **Features**:
+    - Player info card with photo, position, nationality, current club
+    - Physical attributes (height, weight, foot, birth date/place)
+    - Contract details and jersey number
+    - Career totals (appearances, goals, assists)
+    - Latest season statistics with competition-specific metrics
+    - Market value history visualization
+    - Transfer history with filtering and detailed metadata
+  - ✅ Test coverage: 12 test cases covering all functionality
+    - Loading states, error handling, data display, tab switching, position-specific stats
+    - Transfer timeline, career history, market value chart, navigation links
 
 ## 🔧 Prerequisites
 
