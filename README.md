@@ -80,6 +80,15 @@ Build a feature-rich platform that provides:
   - Packages: shared UI, types, and utilities
   - Prisma schema and documentation folders ready
 
+### Phase 2: Core Infrastructure & Backend Development
+- [ ] **Set up Prisma with PostgreSQL** ⚠️ In Progress
+  - ✅ Prisma schema defined (see `prisma/schema.prisma`)
+  - ✅ Prisma Client generated successfully
+  - ⚠️ PostgreSQL database connection pending (see setup options below)
+  - ✅ Initial migration script ready (`prisma/migrations/20260313124109_init`)
+  - ✅ Seed script ready with sample data (`prisma/seed.ts`)
+  - 📝 **Next step**: Install and start PostgreSQL, then run `prisma migrate dev` and `prisma db seed`
+
 ## 🔧 Prerequisites
 
 Before running this project, ensure you have:
@@ -100,24 +109,77 @@ npm install -g pnpm
 pnpm install
 ```
 
-### 2. Configure Database
+### 2. Set Up PostgreSQL Database
+
+**Prisma Client has already been generated.** You need a running PostgreSQL database to proceed.
+
+#### Option A: Using Docker (Recommended if Docker is available)
 
 ```bash
-# Create a PostgreSQL database
+# From the project root, start PostgreSQL container
+docker-compose up -d postgres
+
+# Verify it's running
+docker ps | grep postgres
+
+# The database will be available at:
+# host: localhost
+# port: 5432
+# user: postgres
+# password: password
+# database: transfermarkt_clone
+```
+
+#### Option B: Native Installation (Ubuntu/Debian)
+
+```bash
+# Install PostgreSQL
+sudo apt update
+sudo apt install postgresql postgresql-contrib
+
+# Start PostgreSQL service
+sudo systemctl start postgresql
+sudo systemctl enable postgresql
+
+# Create database
+sudo -u postgres createdb transfermarkt_clone
+
+# Set password for postgres user (optional, if needed)
+sudo -u postgres psql -c "ALTER USER postgres PASSWORD 'password';"
+
+# The DATABASE_URL in .env is already configured for:
+# postgresql://postgres:password@localhost:5432/transfermarkt_clone
+```
+
+#### Option C: macOS
+
+```bash
+# Install PostgreSQL via Homebrew
+brew install postgresql
+
+# Start PostgreSQL
+brew services start postgresql
+
+# Create database
 createdb transfermarkt_clone
-
-# Set DATABASE_URL in environment
-export DATABASE_URL="postgresql://username:password@localhost:5432/transfermarkt_clone"
 ```
 
-### 3. Generate Prisma Client
+#### Option D: Windows
+
+Download and install PostgreSQL from https://www.postgresql.org/download/windows/. Use the installer to create a database named `transfermarkt_clone` and configure the connection in `.env`.
+
+### 3. Verify Database Connection
 
 ```bash
-cd prisma
-npx prisma generate
+# Test connection using Prisma
+npx prisma db push
 ```
 
-### 4. Run Database Migrations
+If successful, Prisma will sync the schema to the database.
+
+### 4. Run Initial Migration (if needed)
+
+The initial migration is already created in `prisma/migrations/`. To apply it:
 
 ```bash
 npx prisma migrate dev --name init
@@ -128,6 +190,15 @@ npx prisma migrate dev --name init
 ```bash
 npx prisma db seed
 ```
+
+This will populate the database with:
+- 4 player positions (Goalkeeper, Defender, Midfielder, Forward)
+- 9 countries with flag URLs
+- 1 season (2024/2025)
+- 3 competitions (Premier League, La Liga, Bundesliga)
+- 3 clubs (Manchester United, Real Madrid, Bayern Munich)
+- 3 players with full stats and market value history
+- Transfer and player statistics data
 
 ### 6. Start Development Server
 
@@ -140,6 +211,45 @@ pnpm dev
 cd apps/api
 pnpm dev
 ```
+
+### 7. Access the Application
+
+- Frontend: http://localhost:3000
+- Prisma Studio (database viewer): `npx prisma studio` (http://localhost:5555)
+
+## 🐛 Troubleshooting
+
+### PostgreSQL Connection Refused
+- Ensure PostgreSQL service is running: `sudo systemctl status postgresql` or `pg_isready`
+- Check if port 5432 is available: `netstat -tulpn | grep 5432`
+- Verify credentials in `.env` match your PostgreSQL setup
+
+### Migration Errors
+- If `prisma db push` fails, ensure the database exists: `createdb transfermarkt_clone`
+- Check that the PostgreSQL user has permission to create tables
+- Review the SQL generated in `prisma/migrations/` for errors
+
+### Seed Script Fails
+- Ensure migrations have been applied before seeding
+- Check for duplicate data; the seed uses `upsert` so it should be idempotent
+- Review error messages for constraint violations
+
+## 📊 Database Schema
+
+The database consists of the following core entities:
+
+| Entity | Purpose | Key Fields |
+|--------|---------|------------|
+| **Player** | Player profile and current state | name, position, currentClubId, marketValue |
+| **Club** | Team information | name, founded, stadium, leagueId |
+| **Competition** | League/cup data | name, country, type |
+| **Transfer** | Player movement records | playerId, fromClubId, toClubId, fee |
+| **PlayerStats** | Season statistics | playerId, season, goals, assists |
+| **MarketValue** | Value history | playerId, date, value |
+| **Season** | Season context | year, startDate, endDate |
+| **User** | User accounts (for watchlist) | email, passwordHash, role |
+
+See [ER Diagram →](./SCHEMA/ER-diagram.md) for full entity relationships.
 
 ## 📊 Database Schema
 

@@ -37,6 +37,7 @@
 - [ ] Set up Prisma with PostgreSQL connection and initial schema migration
   - Deliverable: Working database connection, Prisma Client generated, initial migration executed
   - Create: prisma/schema.prisma, .env with DATABASE_URL, run `prisma generate`
+  - Status: ✅ Prisma Client generated; ⚠️ PostgreSQL not installed on this system; migration pending DB setup
 - [ ] Implement authentication system with NextAuth.js or JWT
   - Deliverable: Complete auth flow: sign up, login, logout, password reset
   - Features: email/password, OAuth (Google), session management, protected routes
