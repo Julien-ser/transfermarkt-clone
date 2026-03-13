@@ -59,10 +59,10 @@
     - apps/web/app/api/clubs/[id]/route.ts (get + update + delete)
     - apps/web/app/api/competitions/route.ts (list + create)
     - apps/web/app/api/competitions/[id]/route.ts (get + update + delete)
-- [ ] Create data seeding scripts with sample football data
-  - Deliverable: prisma/seed.ts with realistic sample data for testing
-  - Include: ~50 players, ~10 teams, 1-2 leagues, transfer records, market value history
-  - Run: `prisma db seed` successfully
+- [x] Create data seeding scripts with sample football data ✅
+   - Deliverable: prisma/seed.ts with realistic sample data for testing
+   - Include: ~50 players, ~10 teams, 1-2 leagues, transfer records, market value history
+   - Run: `prisma db seed` successfully (requires PostgreSQL running)
 - [ ] Implement caching strategy with Redis for frequently accessed data
   - Deliverable: Redis integration with cache invalidation logic
   - Cache: league standings, player market values, team rosters
