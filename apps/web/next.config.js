@@ -1,25 +1,7 @@
- /** @type {import('next').NextConfig} */
- const nextConfig = {
-   // Performance optimizations
-   reactStrictMode: true,
-   swcMinify: true,
- 
-   // Bundle analyzer for performance monitoring
-   ...(process.env.ANALYZE === 'true' && {
-     webpack: (config, { defaultLoaders, isServer }) => {
-       if (!isServer) {
-         const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
-         config.plugins.push(
-           new BundleAnalyzerPlugin({
-             analyzerMode: 'static',
-             reportFilename: '../bundle-analysis.html',
-             openAnalyzer: false,
-           })
-         );
-       }
-       return config;
-     },
-   }),
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  swcMinify: true,
 
   // Image optimization
   images: {
@@ -33,7 +15,6 @@
 
   // Compiler optimizations
   compiler: {
-    // Remove console.log in production (except warnings and errors)
     removeConsole: process.env.NODE_ENV === 'production' ? {
       exclude: ['error', 'warn'],
     } : false,
@@ -41,20 +22,27 @@
 
   // Experimental features for performance
   experimental: {
-    // Optimize package splitting
     optimizePackageImports: ['recharts', 'date-fns'],
-    // Server components optimization
     serverActions: {
       bodySizeLimit: '2mb',
     },
-    // Improve caching
-    incrementalCacheHandler: true,
   },
 
-  // Optimize bundle splitting
-  webpack: (config, { defaultLoaders, isServer }) => {
+  // Optimize bundle splitting and provide fallbacks for Node modules
+  webpack: (config, { isServer }) => {
+    // Add bundle analyzer if ANALYZE is true
+    if (process.env.ANALYZE === 'true' && !isServer) {
+      const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+      config.plugins.push(
+        new BundleAnalyzerPlugin({
+          analyzerMode: 'static',
+          reportFilename: '../bundle-analysis.html',
+          openAnalyzer: false,
+        })
+      );
+    }
+
     if (!isServer) {
-      // Split large dependencies into separate chunks
       config.optimization.splitChunks = {
         ...config.optimization.splitChunks,
         chunks: 'all',
@@ -73,23 +61,35 @@
           },
         },
       };
+      config.resolve.fallback = {
+        ...(config.resolve.fallback || {}),
+        net: false,
+        dns: false,
+        tls: false,
+        fs: false,
+        child_process: false,
+        crypto: false,
+        dgram: false,
+        readline: false,
+        repl: false,
+        vm: false,
+        http: false,
+        https: false,
+        zlib: false,
+        buffer: false,
+        util: false,
+        path: false,
+        module: false,
+      };
     }
-
     return config;
   },
-
-  // Static file serving optimization
-  staticPageGenerationTimeout: 60,
 
   // Output standalone for better deployment
   output: 'standalone',
 
-  // Enable turbopack in development for faster builds (optional)
-  // turbo: {
-  //   resolveAlias: {
-  //     '^@/(.*)$': 'apps/web/$1',
-  //   },
-  // },
+  // Static file serving optimization
+  staticPageGenerationTimeout: 60,
 
   // Headers for better caching
   async headers() {
@@ -114,8 +114,6 @@
       },
     ];
   },
-
-  // Redirects and rewrites can be added here
 };
 
 module.exports = nextConfig;
