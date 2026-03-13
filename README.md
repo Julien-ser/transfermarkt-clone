@@ -487,6 +487,124 @@ Automatic cache invalidation on mutations:
 - `apps/web/lib/cache.ts` - Cache client, TTL constants, key generators, `withCache` helper
 - API routes - Use `withCache()` to cache responses, `cache.invalidatePattern()` on mutations
 
+## 🔄 Market Value Updates (Cron Job)
+
+The application includes an automated market value update system that runs on a schedule to keep player valuations current.
+
+### Features
+
+- **Automated Daily Updates**: Cron job runs daily at 2:00 AM UTC (configurable)
+- **Smart Update Strategy**: Only updates stale players (not updated in last 7 days) by default
+- **Comprehensive Algorithm**: Calculates new values based on:
+  - Player age and development curve
+  - Recent performance statistics
+  - Position-based multipliers
+  - Club/league tier
+  - Market trends and daily volatility
+- **Historical Tracking**: All updates are recorded in the `MarketValue` table for audit and visualization
+- **Manual Trigger**: Admin API endpoint for immediate updates
+
+### How to Run
+
+#### Option 1: Standalone Cron Runner (Recommended for Production)
+
+Start the cron scheduler as a separate background process:
+
+```bash
+cd apps/web
+pnpm cron
+```
+
+This will:
+- Start the cron scheduler with the default daily 2 AM schedule
+- Log all update activity to console
+- Run until stopped (Ctrl+C)
+
+For production, set up as a systemd service or use a process manager like PM2:
+
+```bash
+# Using PM2
+cd apps/web
+pm2 start npm --name "market-value-cron" -- run cron
+```
+
+#### Option 2: Programmatic Scheduler
+
+The scheduler can be imported and controlled programmatically:
+
+```typescript
+import { marketValueScheduler } from "@/lib/cron-service";
+
+// Start the scheduler
+marketValueScheduler.start();
+
+// Stop the scheduler
+marketValueScheduler.stop();
+
+// Run a manual update immediately
+await marketValueScheduler.runUpdate();
+```
+
+### Manual Updates via API
+
+Admin users can trigger updates manually through the API:
+
+```bash
+# Update only stale players (default)
+curl -X POST http://localhost:3000/api/admin/market-values/update \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+
+# Force update all players
+curl -X POST "http://localhost:3000/api/admin/market-values/update?all=true" \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+
+# Get update statistics
+curl http://localhost:3000/api/admin/market-values/update \
+  -H "Authorization: Bearer YOUR_ADMIN_TOKEN"
+```
+
+### Configuration
+
+Change the cron schedule by setting a custom cron expression when instantiating the scheduler:
+
+```typescript
+const scheduler = new MarketValueScheduler("0 */6 * * *"); // Every 6 hours
+```
+
+Common cron patterns:
+- `0 2 * * *` - Daily at 2 AM (default)
+- `0 */6 * * *` - Every 6 hours
+- `*/30 * * * *` - Every 30 minutes
+- `0 0 * * 0` - Weekly on Sunday at midnight
+
+### Display on UI
+
+Market value displays on player profiles now include:
+- **As of** timestamp showing the last update date
+- **Change percentage** indicator (↑/↓ with color coding) compared to previous value
+- Smooth color transitions: green for increases, red for decreases, gray for stable
+
+### Data Structure
+
+The system uses two database fields:
+- `Player.marketValue` - Current market value (EUR)
+- `Player.marketValueDate` - Last update timestamp
+- `MarketValue` table - Historical records for charting and audit trail
+
+### Monitoring
+
+Check the scheduler status and statistics:
+
+```typescript
+import { marketValueScheduler, getMarketValueStats } from "@/lib/marketValueUpdater";
+
+console.log("Scheduler running:", marketValueScheduler.getIsRunning());
+console.log("Next run:", marketValueScheduler.getNextRun());
+
+const stats = await getMarketValueStats();
+console.log("Stats:", stats);
+```
+
 ## 🧪 Testing
 
 Unit tests and E2E tests will be implemented in later phases:

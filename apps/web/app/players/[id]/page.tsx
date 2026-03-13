@@ -396,12 +396,29 @@ export default function PlayerPage({ params }: PlayerPageProps) {
               {player.marketValue && (
                 <div className="text-right">
                   <div className="text-sm text-gray-600 dark:text-gray-400">Market Value</div>
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                    {formatMarketValue(player.marketValue, player.marketValues[0]?.currency)}
+                  <div className="flex items-center justify-end gap-2">
+                    <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+                      {formatMarketValue(player.marketValue, player.marketValues[0]?.currency)}
+                    </div>
+                    {/* Change percentage indicator */}
+                    {(() => {
+                      const currentValue = player.marketValue;
+                      const previousValue = player.marketValues[1]?.value || null;
+                      if (previousValue) {
+                        const changePercentage = ((currentValue - previousValue) / previousValue) * 100;
+                        const indicator = getMarketValueChangeIndicator(changePercentage);
+                        return (
+                          <div className={`text-sm font-medium ${indicator.color}`}>
+                            {indicator.arrow} {Math.abs(changePercentage).toFixed(1)}%
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
                   </div>
                   {player.marketValueDate && (
                     <div className="text-xs text-gray-500 dark:text-gray-400">
-                      Updated: {formatDate(player.marketValueDate)}
+                      As of {formatDate(player.marketValueDate)}
                     </div>
                   )}
                 </div>
