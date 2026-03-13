@@ -240,55 +240,72 @@ async function main() {
   console.log('✓ Created players')
 
   // Create player-club relationships
-  await prisma.playerClub.createMany({
-    data: [
-      {
-        playerId: player1.id,
-        clubId: manUnited.id,
-        seasonId: currentSeason.id,
-        jerseyNumber: 8,
-        appearances: 25,
-        goals: 12,
-        assists: 8,
+  for (const data of [
+    {
+      playerId: player1.id,
+      clubId: manUnited.id,
+      seasonId: currentSeason.id,
+      jerseyNumber: 8,
+      appearances: 25,
+      goals: 12,
+      assists: 8,
+    },
+    {
+      playerId: player2.id,
+      clubId: realMadrid.id,
+      seasonId: currentSeason.id,
+      jerseyNumber: 7,
+      appearances: 30,
+      goals: 28,
+      assists: 10,
+    },
+    {
+      playerId: player3.id,
+      clubId: bayern.id,
+      seasonId: currentSeason.id,
+      jerseyNumber: 9,
+      appearances: 28,
+      goals: 24,
+      assists: 7,
+    },
+  ]) {
+    await prisma.playerClub.upsert({
+      where: {
+        playerId_clubId_seasonId: {
+          playerId: data.playerId,
+          clubId: data.clubId,
+          seasonId: data.seasonId,
+        },
       },
-      {
-        playerId: player2.id,
-        clubId: realMadrid.id,
-        seasonId: currentSeason.id,
-        jerseyNumber: 7,
-        appearances: 30,
-        goals: 28,
-        assists: 10,
-      },
-      {
-        playerId: player3.id,
-        clubId: bayern.id,
-        seasonId: currentSeason.id,
-        jerseyNumber: 9,
-        appearances: 28,
-        goals: 24,
-        assists: 7,
-      },
-    ],
-    skipDuplicates: true,
-  })
+      update: {},
+      create: data,
+    })
+  }
   console.log('✓ Created player-club relationships')
 
   // Create market value history
-  await prisma.marketValue.createMany({
-    data: [
-      { playerId: player1.id, value: 75000000, date: new Date('2024-01-01') },
-      { playerId: player1.id, value: 72000000, date: new Date('2024-02-01') },
-      { playerId: player1.id, value: 75000000, date: new Date('2024-03-01') },
-      { playerId: player2.id, value: 180000000, date: new Date('2024-01-01') },
-      { playerId: player2.id, value: 175000000, date: new Date('2024-02-01') },
-      { playerId: player2.id, value: 180000000, date: new Date('2024-03-01') },
-      { playerId: player3.id, value: 110000000, date: new Date('2024-01-01') },
-      { playerId: player3.id, value: 115000000, date: new Date('2024-02-01') },
-      { playerId: player3.id, value: 110000000, date: new Date('2024-03-01') },
-    ],
-    skipDuplicates: true,
-  })
+  for (const mv of [
+    { playerId: player1.id, value: 75000000, date: new Date('2024-01-01') },
+    { playerId: player1.id, value: 72000000, date: new Date('2024-02-01') },
+    { playerId: player1.id, value: 75000000, date: new Date('2024-03-01') },
+    { playerId: player2.id, value: 180000000, date: new Date('2024-01-01') },
+    { playerId: player2.id, value: 175000000, date: new Date('2024-02-01') },
+    { playerId: player2.id, value: 180000000, date: new Date('2024-03-01') },
+    { playerId: player3.id, value: 110000000, date: new Date('2024-01-01') },
+    { playerId: player3.id, value: 115000000, date: new Date('2024-02-01') },
+    { playerId: player3.id, value: 110000000, date: new Date('2024-03-01') },
+  ]) {
+    await prisma.marketValue.upsert({
+      where: {
+        playerId_date: {
+          playerId: mv.playerId,
+          date: mv.date,
+        },
+      },
+      update: {},
+      create: mv,
+    })
+  }
   console.log('✓ Created market value history')
 
   // Create transfer
@@ -307,74 +324,84 @@ async function main() {
   console.log('✓ Created sample transfer')
 
   // Create player stats
-  await prisma.playerStats.createMany({
-    data: [
-      {
-        playerId: player1.id,
-        clubId: manUnited.id,
-        seasonId: currentSeason.id,
-        competitionType: 'LEAGUE',
-        appearances: 25,
-        starts: 24,
-        minutesPlayed: 2150,
-        goals: 12,
-        assists: 8,
-        yellowCards: 3,
-        redCards: 0,
-        shots: 85,
-        shotsOnTarget: 40,
-        passes: 1200,
-        keyPasses: 75,
-        tackles: 25,
-        interceptions: 18,
-        foulsDrawn: 45,
-        foulsCommitted: 22,
+  for (const stats of [
+    {
+      playerId: player1.id,
+      clubId: manUnited.id,
+      seasonId: currentSeason.id,
+      competitionType: 'LEAGUE',
+      appearances: 25,
+      starts: 24,
+      minutesPlayed: 2150,
+      goals: 12,
+      assists: 8,
+      yellowCards: 3,
+      redCards: 0,
+      shots: 85,
+      shotsOnTarget: 40,
+      passes: 1200,
+      keyPasses: 75,
+      tackles: 25,
+      interceptions: 18,
+      foulsDrawn: 45,
+      foulsCommitted: 22,
+    },
+    {
+      playerId: player2.id,
+      clubId: realMadrid.id,
+      seasonId: currentSeason.id,
+      competitionType: 'LEAGUE',
+      appearances: 30,
+      starts: 29,
+      minutesPlayed: 2650,
+      goals: 28,
+      assists: 10,
+      yellowCards: 5,
+      redCards: 0,
+      shots: 150,
+      shotsOnTarget: 85,
+      passes: 600,
+      keyPasses: 35,
+      tackles: 15,
+      interceptions: 8,
+      foulsDrawn: 65,
+      foulsCommitted: 18,
+    },
+    {
+      playerId: player3.id,
+      clubId: bayern.id,
+      seasonId: currentSeason.id,
+      competitionType: 'LEAGUE',
+      appearances: 28,
+      starts: 28,
+      minutesPlayed: 2500,
+      goals: 24,
+      assists: 7,
+      yellowCards: 4,
+      redCards: 0,
+      shots: 120,
+      shotsOnTarget: 70,
+      passes: 350,
+      keyPasses: 20,
+      tackles: 12,
+      interceptions: 5,
+      foulsDrawn: 45,
+      foulsCommitted: 15,
+    },
+  ]) {
+    await prisma.playerStats.upsert({
+      where: {
+        playerId_clubId_seasonId_competitionType: {
+          playerId: stats.playerId,
+          clubId: stats.clubId,
+          seasonId: stats.seasonId,
+          competitionType: stats.competitionType,
+        },
       },
-      {
-        playerId: player2.id,
-        clubId: realMadrid.id,
-        seasonId: currentSeason.id,
-        competitionType: 'LEAGUE',
-        appearances: 30,
-        starts: 29,
-        minutesPlayed: 2650,
-        goals: 28,
-        assists: 10,
-        yellowCards: 5,
-        redCards: 0,
-        shots: 150,
-        shotsOnTarget: 85,
-        passes: 600,
-        keyPasses: 35,
-        tackles: 15,
-        interceptions: 8,
-        foulsDrawn: 65,
-        foulsCommitted: 18,
-      },
-      {
-        playerId: player3.id,
-        clubId: bayern.id,
-        seasonId: currentSeason.id,
-        competitionType: 'LEAGUE',
-        appearances: 28,
-        starts: 28,
-        minutesPlayed: 2500,
-        goals: 24,
-        assists: 7,
-        yellowCards: 4,
-        redCards: 0,
-        shots: 120,
-        shotsOnTarget: 70,
-        passes: 350,
-        keyPasses: 20,
-        tackles: 12,
-        interceptions: 5,
-        foulsDrawn: 45,
-        foulsCommitted: 15,
-      },
-    ],
-    skipDuplicates: true,
-  })
+      update: {},
+      create: stats,
+    })
+  }
   console.log('✓ Created player stats')
 
   console.log('✅ Database seeding completed successfully!')
