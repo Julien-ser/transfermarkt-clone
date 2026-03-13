@@ -3,10 +3,31 @@
 import { useSession, signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export function Header() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const [watchlistCount, setWatchlistCount] = useState<number>(0);
+
+  useEffect(() => {
+    if (session) {
+      fetchWatchlistCount();
+    }
+  }, [session]);
+
+  const fetchWatchlistCount = async () => {
+    try {
+      const response = await fetch("/api/watchlist");
+      if (response.ok) {
+        const data = await response.json();
+        const total = (data.players?.length || 0) + (data.clubs?.length || 0);
+        setWatchlistCount(total);
+      }
+    } catch (error) {
+      console.error("Failed to fetch watchlist count:", error);
+    }
+  };
 
   const handleLogout = async () => {
     await signOut({ redirect: false });
@@ -30,9 +51,14 @@ export function Header() {
                 <span className="text-white">Welcome, {session.user?.name || session.user?.email}</span>
                 <Link
                   href="/watchlist"
-                  className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
                 >
                   Watchlist
+                  {watchlistCount > 0 && (
+                    <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
+                      {watchlistCount}
+                    </span>
+                  )}
                 </Link>
                 <button
                   onClick={handleLogout}
