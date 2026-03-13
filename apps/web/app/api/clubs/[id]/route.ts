@@ -209,10 +209,11 @@ export async function PUT(
       },
     });
 
-    // Invalidate related caches
-    await cache.del(CACHE_KEYS.club(clubId.toString()));
-    await cache.invalidatePattern("clubs:*");
-    await cache.invalidatePattern("players:*"); // Players list may be filtered by club
+     // Invalidate related caches
+     await cache.del(CACHE_KEYS.club(clubId.toString()));
+     await cache.invalidatePattern("clubs:*");
+     await cache.invalidatePattern("standings:*"); // Standings may be affected
+     await cache.invalidatePattern("players:*"); // Players list may be filtered by club
 
     return NextResponse.json(club);
   } catch (error) {
@@ -272,10 +273,11 @@ export async function DELETE(
       where: { id: clubId },
     });
 
-    // Invalidate related caches
-    await cache.del(CACHE_KEYS.club(clubId.toString()));
-    await cache.invalidatePattern("clubs:*");
-    await cache.invalidatePattern("players:*"); // Players filtered by currentClubId
+     // Invalidate related caches
+     await cache.del(CACHE_KEYS.club(clubId.toString()));
+     await cache.invalidatePattern("clubs:*");
+     await cache.invalidatePattern("standings:*"); // Standings may be affected
+     await cache.invalidatePattern("players:*"); // Players filtered by currentClubId
 
     return NextResponse.json({ message: "Club deleted successfully" });
   } catch (error) {

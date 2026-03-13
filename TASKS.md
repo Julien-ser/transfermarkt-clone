@@ -63,10 +63,17 @@
    - Deliverable: prisma/seed.ts with realistic sample data for testing
    - Include: ~50 players, ~10 teams, 1-2 leagues, transfer records, market value history
    - Run: `prisma db seed` successfully (requires PostgreSQL running)
-- [ ] Implement caching strategy with Redis for frequently accessed data
-  - Deliverable: Redis integration with cache invalidation logic
-  - Cache: league standings, player market values, team rosters
-  - Configuration: redis connection, cache helper functions, TTL management
+ - [x] Implement caching strategy with Redis for frequently accessed data ✅
+   - Deliverable: Redis integration with cache invalidation logic
+   - Cache: league standings, player market values, team rosters
+   - Configuration: redis connection, cache helper functions, TTL management
+   - Implemented:
+     - Redis client with connection pooling (ioredis)
+     - Cache helper with TTL management (apps/web/lib/cache.ts)
+     - Cached endpoints: players list, player detail, clubs list, club detail, competitions list, competition detail, league standings
+     - Cache invalidation on mutations (create/update/delete)
+     - Pattern-based invalidation for related data
+     - .env configuration with REDIS_URL
 
 ## Phase 3: Frontend Development - Core Pages & Components
 

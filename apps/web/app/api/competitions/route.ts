@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { competitionSearchSchema, competitionSchema } from "@/lib/validations";
+import { withCache, CACHE_TTL, generateCacheKey } from "@/lib/cache";
 
 const prisma = new PrismaClient();
 
@@ -14,59 +15,81 @@ export async function GET(request: NextRequest) {
     // Validate query parameters
     const validatedSearch = competitionSearchSchema.parse(search);
 
-    // Build where clause for filtering
-    const where: any = {};
-
-    if (search.name) {
-      where.name = { contains: search.name, mode: "insensitive" };
-    }
-
-    if (search.type) {
-      where.type = search.type;
-    }
-
-    if (search.countryId) {
-      where.countryId = search.countryId;
-    }
-
-    // Build orderBy
-    const orderBy: any = {};
-    if (validatedSearch.sortBy) {
-      orderBy[validatedSearch.sortBy] = validatedSearch.sortOrder;
-    }
-
-    // Calculate pagination
-    const skip = (validatedSearch.page - 1) * validatedSearch.limit;
-
-    // Fetch competitions with pagination, sorting, and includes
-    const [competitions, total] = await Promise.all([
-      prisma.competition.findMany({
-        where,
-        include: {
-          country: true,
-          seasons: {
-            orderBy: {
-              startDate: "desc",
-            },
-            take: 5,
-          },
-        },
-        orderBy,
-        skip,
-        take: validatedSearch.limit,
-      }),
-      prisma.competition.count({ where }),
-    ]);
-
-    return NextResponse.json({
-      competitions,
-      pagination: {
-        page: validatedSearch.page,
-        limit: validatedSearch.limit,
-        total,
-        totalPages: Math.ceil(total / validatedSearch.limit),
-      },
+    // Generate cache key based on query parameters
+    const cacheKey = generateCacheKey("competitions", {
+      page: validatedSearch.page,
+      limit: validatedSearch.limit,
+      name: search.name || "",
+      type: search.type || "",
+      countryId: search.countryId || "",
+      sortBy: validatedSearch.sortBy || "",
+      sortOrder: validatedSearch.sortOrder || "",
     });
+
+    // Try to get from cache first
+    const { data, fromCache } = await withCache(
+      cacheKey,
+      CACHE_TTL.COMPETITIONS_LIST,
+      async () => {
+        // Build where clause for filtering
+        const where: any = {};
+
+        if (search.name) {
+          where.name = { contains: search.name, mode: "insensitive" };
+        }
+
+        if (search.type) {
+          where.type = search.type;
+        }
+
+        if (search.countryId) {
+          where.countryId = search.countryId;
+        }
+
+        // Build orderBy
+        const orderBy: any = {};
+        if (validatedSearch.sortBy) {
+          orderBy[validatedSearch.sortBy] = validatedSearch.sortOrder;
+        }
+
+        // Calculate pagination
+        const skip = (validatedSearch.page - 1) * validatedSearch.limit;
+
+        // Fetch competitions with pagination, sorting, and includes
+        const [competitions, total] = await Promise.all([
+          prisma.competition.findMany({
+            where,
+            include: {
+              country: true,
+              seasons: {
+                orderBy: {
+                  startDate: "desc",
+                },
+                take: 5,
+              },
+            },
+            orderBy,
+            skip,
+            take: validatedSearch.limit,
+          }),
+          prisma.competition.count({ where }),
+        ]);
+
+        return {
+          competitions,
+          pagination: {
+            page: validatedSearch.page,
+            limit: validatedSearch.limit,
+            total,
+            totalPages: Math.ceil(total / validatedSearch.limit),
+          },
+        };
+      }
+    );
+
+    // Add cache metadata to response
+    const response = { ...data, fromCache };
+    return NextResponse.json(response);
   } catch (error) {
     console.error("Competitions fetch error:", error);
     return NextResponse.json(

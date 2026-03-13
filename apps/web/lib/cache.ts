@@ -207,6 +207,8 @@ export async function withCache<T>(
   }
 }
 
-// Initialize cache connection on module load (optional)
-// Uncomment if you want auto-connection:
-// cache.connect().catch(console.error);
+// Initialize cache connection on module load
+// This ensures Redis is ready when API routes first use it
+cache.connect().catch((error) => {
+  console.warn("⚠️ Redis cache not available, running without cache:", error.message);
+});

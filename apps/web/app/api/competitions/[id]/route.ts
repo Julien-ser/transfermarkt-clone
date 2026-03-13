@@ -125,10 +125,11 @@ export async function PUT(
       },
     });
 
-    // Invalidate related caches
-    await cache.del(CACHE_KEYS.competition(competitionId.toString()));
-    await cache.invalidatePattern("competitions:*");
-    await cache.invalidatePattern("clubs:*"); // Club-competition relationships may change
+     // Invalidate related caches
+     await cache.del(CACHE_KEYS.competition(competitionId.toString()));
+     await cache.invalidatePattern("competitions:*");
+     await cache.invalidatePattern("standings:*"); // Standings for this competition
+     await cache.invalidatePattern("clubs:*"); // Club-competition relationships
 
     return NextResponse.json(competition);
   } catch (error) {
@@ -188,10 +189,11 @@ export async function DELETE(
       where: { id: competitionId },
     });
 
-    // Invalidate related caches
-    await cache.del(CACHE_KEYS.competition(competitionId.toString()));
-    await cache.invalidatePattern("competitions:*");
-    await cache.invalidatePattern("clubs:*"); // Club-competition relationships
+     // Invalidate related caches
+     await cache.del(CACHE_KEYS.competition(competitionId.toString()));
+     await cache.invalidatePattern("competitions:*");
+     await cache.invalidatePattern("standings:*"); // Standings for this competition
+     await cache.invalidatePattern("clubs:*"); // Club-competition relationships
 
     return NextResponse.json({ message: "Competition deleted successfully" });
   } catch (error) {

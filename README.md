@@ -24,7 +24,7 @@ Build a feature-rich platform that provides:
 - **Next.js API Routes** (or standalone Express/FastAPI)
 - **Prisma ORM** for database access
 - **PostgreSQL** as primary database
-- **Redis** for caching (planned)
+- **Redis** for high-performance caching
 
 ### DevOps
 - **Vercel** for frontend deployment
@@ -58,12 +58,12 @@ Build a feature-rich platform that provides:
 ## ✅ Current Progress
 
 ### Phase 1: Planning & Setup
-- [x] **Define Feature Scope & Requirements** ✅
+- [x] **Define Feature Scope & Requirements** ✅ Complete
   - Comprehensive MVP and full feature list
   - Prioritized feature specifications
   - Success metrics and definition of done
   - [View Requirements →](./DOCUMENTATION/requirements.md)
-- [x] **Database Schema Defined** ✅
+- [x] **Database Schema Defined** ✅ Complete
   - Complete Prisma schema with 15+ entities
   - Comprehensive ER diagram with relationships
   - Full documentation with enums and constraints
@@ -114,6 +114,34 @@ Build a feature-rich platform that provides:
     - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (optional)
     - `NEXTAUTH_SECRET` - Secret key for JWT signing (required)
     - `NEXTAUTH_URL` - Application URL (e.g., http://localhost:3000)
+- [x] **Build CRUD API endpoints for core entities** ✅ Complete
+  - ✅ RESTful API endpoints with proper error handling and validation
+  - ✅ Endpoints: GET/POST/PUT/DELETE for players, clubs, competitions
+  - ✅ Request validation (Zod), response formatting, pagination, filtering
+  - 📝 **Files**:
+    - `apps/web/lib/validations.ts` - Zod schemas for request validation
+    - `apps/web/app/api/players/route.ts` - Player list + create
+    - `apps/web/app/api/players/[id]/route.ts` - Player get + update + delete (with cache)
+    - `apps/web/app/api/clubs/route.ts` - Club list + create (with cache)
+    - `apps/web/app/api/clubs/[id]/route.ts` - Club get + update + delete (with cache)
+    - `apps/web/app/api/competitions/route.ts` - Competition list + create (with cache)
+    - `apps/web/app/api/competitions/[id]/route.ts` - Competition get + update + delete (with cache)
+- [x] **Create data seeding scripts with sample football data** ✅ Complete
+  - ✅ Comprehensive seed with realistic sample data for testing
+  - ✅ Includes: positions, countries, clubs, players, stats, transfers
+  - ✅ Run: `pnpm db:seed` (requires PostgreSQL running)
+- [x] **Implement caching strategy with Redis** ✅ Complete
+  - ✅ Redis integration with ioredis client and connection pooling
+  - ✅ Cache helper with TTL management and pattern invalidation
+  - ✅ Cached data: league standings, player market values, team rosters
+  - ✅ Optimized endpoints: players list, player detail, clubs list, club detail, competitions list, competition detail, league standings
+  - ✅ Automatic cache invalidation on mutations (create/update/delete)
+  - ✅ Pattern-based invalidation for related data consistency
+  - 📝 **Configuration**: `REDIS_URL` in `.env` (default: `redis://localhost:6379`)
+  - 📝 **Files**:
+    - `apps/web/lib/cache.ts` - Cache client and helpers
+    - `apps/web/app/api/competitions/[id]/standings/route.ts` - Standings endpoint with caching
+    - Updated API routes with cache invalidation logic
 
 ## 🔧 Prerequisites
 
@@ -310,6 +338,57 @@ git add .
 git commit -m "Feature: [description]"
 git push origin main
 ```
+
+## 🔥 Redis Caching Implementation
+
+The application implements a comprehensive Redis caching strategy to improve performance and reduce database load for frequently accessed data.
+
+### Cached Data & TTL
+
+| Data Type | TTL | Endpoint |
+|-----------|-----|----------|
+| Players list | 5 min | `GET /api/players` |
+| Player detail | 30 min | `GET /api/players/[id]` |
+| Clubs list | 10 min | `GET /api/clubs` |
+| Club detail (squad) | 30 min | `GET /api/clubs/[id]` |
+| Competitions list | 30 min | `GET /api/competitions` |
+| Competition detail | 1 hour | `GET /api/competitions/[id]` |
+| League standings | 5 min | `GET /api/competitions/[id]/standings` |
+
+### Cache Invalidation
+
+Automatic cache invalidation on mutations:
+- **Player update/delete**: Invalidates player cache + players list pattern
+- **Club update/delete**: Invalidates club cache + clubs list + players list + standings patterns
+- **Competition update/delete**: Invalidates competition cache + competitions list + clubs + standings patterns
+
+### Setup
+
+1. Install Redis:
+   ```bash
+   # Ubuntu/Debian
+   sudo apt install redis-server
+   sudo systemctl start redis-server
+   
+   # macOS
+   brew install redis
+   brew services start redis
+   
+   # Docker
+   docker run -d -p 6379:6379 redis:alpine
+   ```
+
+2. Configure in `.env`:
+   ```env
+   REDIS_URL=redis://localhost:6379
+   ```
+
+3. The cache client auto-connects on first use. If Redis is unavailable, the app falls back to direct database queries.
+
+### Implementation Files
+
+- `apps/web/lib/cache.ts` - Cache client, TTL constants, key generators, `withCache` helper
+- API routes - Use `withCache()` to cache responses, `cache.invalidatePattern()` on mutations
 
 ## 🧪 Testing
 
