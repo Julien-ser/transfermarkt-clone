@@ -11,11 +11,13 @@ import { updateStaleMarketValues, getMarketValueStats } from "./marketValueUpdat
 class MarketValueScheduler {
   private isRunning = false;
   private scheduledJob: cron.ScheduledTask | null = null;
+  private schedule: string;
   private readonly DEFAULT_SCHEDULE = "0 2 * * *"; // Daily at 2 AM
 
-  constructor(private schedule?: string) {
+  constructor(schedule?: string) {
     // Use provided schedule or fall back to environment variable, then default
-    this.schedule = schedule || process.env.MARKET_VALUE_UPDATE_SCHEDULE || this.DEFAULT_SCHEDULE;
+    const scheduleValue = schedule || process.env.MARKET_VALUE_UPDATE_SCHEDULE || this.DEFAULT_SCHEDULE;
+    this.schedule = scheduleValue as string;
   }
 
   /**
@@ -53,7 +55,6 @@ class MarketValueScheduler {
   stop(): void {
     if (this.scheduledJob) {
       this.scheduledJob.stop();
-      this.scheduledJob.destroy();
       this.scheduledJob = null;
       this.isRunning = false;
       console.log("[MarketValueScheduler] Scheduler stopped");
@@ -97,7 +98,8 @@ class MarketValueScheduler {
    */
   getNextRun(): Date | null {
     if (!this.scheduledJob) return null;
-    return this.scheduledJob.nextDates().toDate();
+    // @ts-ignore - node-cron's nextDates is not in the type definitions
+    return this.scheduledJob.nextDates(1).toDate();
   }
 }
 

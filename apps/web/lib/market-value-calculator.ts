@@ -169,13 +169,15 @@ export class MarketValueCalculator {
   /**
    * Get average market value for a position as fallback.
    */
-  private async getPositionAverageValue(positionId: number): Promise<number> {
-    const result = await prisma.player.aggregate({
-      where: { positionId },
-      avg: { marketValue: true },
-    });
-    return result._avg?.marketValue || 10000000; // Fallback to €10m
-  }
+   private async getPositionAverageValue(positionId: number): Promise<number> {
+     const result = await prisma.player.aggregate({
+       where: { positionId },
+       _avg: {
+         marketValue: true
+       }
+     });
+     return result._avg?.marketValue || 10000000; // Fallback to €10m
+   }
 
   /**
    * Calculate impact of recent transfers.
