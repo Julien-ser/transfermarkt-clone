@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { Table, Card } from "ui";
 import { formatTransferFee, formatDate } from "@/lib/format";
 
@@ -115,34 +116,37 @@ export function LatestTransfersTable() {
 
   const columns = [
     {
-      key: 'player',
+      key: 'player' as const,
       header: 'Player',
       render: (_value: unknown, row: Transfer) => (
         <div className="flex items-center">
           {row.player.imageUrl ? (
-            <div className="relative w-10 h-10 mr-3">
-              <img
+            <div className="relative w-10 h-10 mr-3 flex-shrink-0">
+              <Image
                 src={row.player.imageUrl}
                 alt={row.player.fullName}
-                className="rounded-full object-cover"
+                width={40}
+                height={40}
                 sizes="40px"
+                className="rounded-full object-cover"
+                loading="lazy"
               />
             </div>
           ) : (
-            <div className="w-10 h-10 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                 {row.player.fullName.charAt(0)}
               </span>
             </div>
           )}
-          <div>
-            <Link 
+          <div className="min-w-0">
+            <Link
               href={`/players/${row.player.id}`}
-              className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate"
             >
               {row.player.fullName}
             </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
               {row.player.position.name}
             </div>
           </div>
@@ -150,55 +154,57 @@ export function LatestTransfersTable() {
       ),
     },
     {
-      key: 'fromClub',
+      key: 'fromClub' as const,
       header: 'From',
       render: (_value: unknown, row: Transfer) => (
-        <Link 
+        <Link
           href={`/teams/${row.fromClub.id}`}
-          className="hover:text-blue-600 dark:hover:text-blue-400"
+          className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
         >
-          <div className="flex items-center">
-            {row.fromClub.logoUrl && (
-              <div className="relative w-6 h-6 mr-2">
-                <img
-                  src={row.fromClub.logoUrl}
-                  alt={row.fromClub.name}
-                  className="object-contain"
-                  sizes="24px"
-                />
-              </div>
-            )}
-            <span>{row.fromClub.name}</span>
-          </div>
+          {row.fromClub.logoUrl && (
+            <div className="relative w-6 h-6 mr-2 flex-shrink-0">
+              <Image
+                src={row.fromClub.logoUrl}
+                alt={row.fromClub.name}
+                width={24}
+                height={24}
+                sizes="24px"
+                className="object-contain"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <span className="truncate">{row.fromClub.name}</span>
         </Link>
       ),
     },
     {
-      key: 'toClub',
+      key: 'toClub' as const,
       header: 'To',
       render: (_value: unknown, row: Transfer) => (
-        <Link 
+        <Link
           href={`/teams/${row.toClub.id}`}
-          className="hover:text-blue-600 dark:hover:text-blue-400"
+          className="hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
         >
-          <div className="flex items-center">
-            {row.toClub.logoUrl && (
-              <div className="relative w-6 h-6 mr-2">
-                <img
-                  src={row.toClub.logoUrl}
-                  alt={row.toClub.name}
-                  className="object-contain"
-                  sizes="24px"
-                />
-              </div>
-            )}
-            <span>{row.toClub.name}</span>
-          </div>
+          {row.toClub.logoUrl && (
+            <div className="relative w-6 h-6 mr-2 flex-shrink-0">
+              <Image
+                src={row.toClub.logoUrl}
+                alt={row.toClub.name}
+                width={24}
+                height={24}
+                sizes="24px"
+                className="object-contain"
+                loading="lazy"
+              />
+            </div>
+          )}
+          <span className="truncate">{row.toClub.name}</span>
         </Link>
       ),
     },
     {
-      key: 'transferDate',
+      key: 'transferDate' as const,
       header: 'Date',
       render: (_value: unknown, row: Transfer) => (
         <span className="text-gray-600 dark:text-gray-400">
@@ -207,7 +213,7 @@ export function LatestTransfersTable() {
       ),
     },
     {
-      key: 'fee',
+      key: 'fee' as const,
       header: 'Fee',
       render: (_value: unknown, row: Transfer) => (
         <span className={`font-medium ${

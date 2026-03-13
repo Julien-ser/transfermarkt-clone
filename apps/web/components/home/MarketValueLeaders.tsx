@@ -68,34 +68,37 @@ export function MarketValueLeaders() {
 
   const columns = [
     {
-      key: 'player',
+      key: 'fullName' as const,
       header: 'Player',
       render: (value: unknown, row: Player) => (
         <div className="flex items-center">
           {row.imageUrl ? (
-            <div className="relative w-10 h-10 mr-3">
-              <img
+            <div className="relative w-10 h-10 mr-3 flex-shrink-0">
+              <Image
                 src={row.imageUrl}
                 alt={row.fullName}
-                className="rounded-full object-cover"
+                width={40}
+                height={40}
                 sizes="40px"
+                className="rounded-full object-cover"
+                loading="lazy"
               />
             </div>
           ) : (
-            <div className="w-10 h-10 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 mr-3 bg-gray-200 dark:bg-gray-700 rounded-full flex items-center justify-center flex-shrink-0">
               <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
                 {row.fullName.charAt(0)}
               </span>
             </div>
           )}
-          <div>
-            <Link 
+          <div className="min-w-0">
+            <Link
               href={`/players/${row.id}`}
-              className="font-medium text-blue-600 dark:text-blue-400 hover:underline"
+              className="font-medium text-blue-600 dark:text-blue-400 hover:underline truncate"
             >
               {row.fullName}
             </Link>
-            <div className="text-sm text-gray-500 dark:text-gray-400">
+            <div className="text-sm text-gray-500 dark:text-gray-400 truncate">
               {row.position.name}
             </div>
           </div>
@@ -103,45 +106,51 @@ export function MarketValueLeaders() {
       ),
     },
     {
-      key: 'currentClub',
+      key: 'currentClub' as const,
       header: 'Club',
       render: (value: unknown, row: Player) => (
         <div className="flex items-center">
           {row.currentClub?.logoUrl && (
-            <div className="relative w-6 h-6 mr-2">
-              <img
+            <div className="relative w-6 h-6 mr-2 flex-shrink-0">
+              <Image
                 src={row.currentClub.logoUrl}
                 alt={row.currentClub.name}
-                className="object-contain"
+                width={24}
+                height={24}
                 sizes="24px"
+                className="object-contain"
+                loading="lazy"
               />
             </div>
           )}
-          <span>{row.currentClub?.name || 'Free Agent'}</span>
+          <span className="truncate">{row.currentClub?.name || 'Free Agent'}</span>
         </div>
       ),
     },
     {
-      key: 'nationality',
+      key: 'nationality' as const,
       header: 'Nation',
       render: (value: unknown, row: Player) => (
         <div className="flex items-center">
           {row.nationality?.flagUrl && (
-            <div className="relative w-5 h-3 mr-2 overflow-hidden rounded">
-              <img
+            <div className="relative w-5 h-3 mr-2 flex-shrink-0 overflow-hidden rounded">
+              <Image
                 src={row.nationality.flagUrl}
                 alt={row.nationality.name}
-                className="object-cover"
+                width={20}
+                height={12}
                 sizes="20px"
+                className="object-cover"
+                loading="lazy"
               />
             </div>
           )}
-          <span>{row.nationality?.name || 'N/A'}</span>
+          <span className="truncate">{row.nationality?.name || 'N/A'}</span>
         </div>
       ),
     },
     {
-      key: 'marketValue',
+      key: 'marketValue' as const,
       header: 'Market Value',
       render: (value: unknown, row: Player) => (
         <span className="font-semibold text-green-600 dark:text-green-400">
