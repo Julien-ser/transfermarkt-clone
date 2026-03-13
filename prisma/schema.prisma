@@ -1,6 +1,4 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
+// This is your Prisma schema file
 generator client {
   provider = "prisma-client-js"
 }
@@ -10,239 +8,414 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-// League/Competition model
-model League {
-  id        Int       @id @default(autoincrement())
-  name      String
-  country   String
-  code      String?   // e.g., "EN", "ES", "DE"
-  season    String    // e.g., "2024-25"
-  logo      String?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+// ============================================
+// CORE ENTITIES
+// ============================================
 
-  // Relationships
+model Country {
+  id        Int      @id @default(autoincrement())
+  name      String   @unique
+  code      String?  @map("iso_code") // ISO 3166-1 alpha-2 or alpha-3
+  flagUrl   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
   clubs     Club[]
-  seasons   Season[]
+  competitions Competition[]
+  players   Player[]  @relation("PlayerNationality")
+  birthPlace Player[] @relation("PlayerBirthPlace")
+
+  @@map("countries")
+}
+
+model Competition {
+  id          Int      @id @default(autoincrement())
+  name        String
+  type        CompetitionType // LEAGUE, CUP, CHAMPIONS_LEAGUE, etc.
+  countryId   Int?
+  country     Country? @relation(fields: [countryId], references: [id])
+  externalId  String?  @unique // For integration with external APIs
+  logoUrl     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  seasons     Season[]
+  clubs       ClubCompetition[]
+  matches     Match[]
+
+  @@map("competitions")
 }
 
 model Season {
-  id        Int      @id @default(autoincrement())
-  leagueId  Int
-  year      String   // "2024-25"
-  startDate DateTime
-  endDate   DateTime
-  isCurrent Boolean  @default(false)
+  id           Int      @id @default(autoincrement())
+  year         String   // e.g., "2024/2025"
+  startDate    DateTime
+  endDate      DateTime
+  isCurrent    Boolean  @default(false)
+  createdAt    DateTime @default(now())
 
-  league    League   @relation(fields: [leagueId], references: [id])
-  standings Standing[]
+  // Relations
+  competitions Competition[]
+  transfers    Transfer[]
+  playerStats  PlayerStats[]
+  matches      Match[]
+  clubSeasons  ClubSeason[]
+
+  @@unique([year])
+  @@map("seasons")
 }
 
-// Club/Team model
 model Club {
-  id            Int       @id @default(autoincrement())
-  name          String
-  shortName     String?
-  founded       Int?
-  stadium       String?
+  id              Int      @id @default(autoincrement())
+  name            String
+  shortName       String?
+  slug            String   @unique
+  foundedYear     Int?
+  stadiumName     String?
   stadiumCapacity Int?
-  website       String?
-  logo          String?
-  primaryColor  String?   // hex color
-  secondaryColor String?  // hex color
-  leagueId      Int?
-  currentLeagueId Int?    // for tracking current league (may differ from historical)
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  website         String?
+  logoUrl         String?
+  address         String?
+  phone           String?
+  email           String?
+  countryId       Int
+  country         Country   @relation(fields: [countryId], references: [id])
+  externalId      String?   @unique
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
-  // Relationships
-  league        League?   @relation(fields: [leagueId], references: [id])
-  currentLeague League?  @relation("ClubCurrentLeague", fields: [currentLeagueId], references: [id])
-  players       Player[]
-  homeTransfers Transfer[]  @relation("TransferFromClub")
-  awayTransfers Transfer[]  @relation("TransferToClub")
-  seasons       ClubSeason[]
+  // Relations
+  seasons         ClubSeason[]
+  competitions   ClubCompetition[]
+  players        PlayerClub[]
+  transfersFrom  Transfer[] @relation("FromClub")
+  transfersTo    Transfer[] @relation("ToClub")
+  homeMatches    Match[]     @relation("HomeClub")
+  awayMatches    Match[]     @relation("AwayClub")
+
+  @@map("clubs")
 }
+
+model Player {
+  id                Int      @id @default(autoincrement())
+  firstName         String
+  lastName          String
+  fullName          String  // Computed: concat(firstName, lastName)
+  slug              String  @unique
+  birthDate         DateTime
+  birthPlaceId      Int?
+  birthPlace        Country? @relation("PlayerBirthPlace", fields: [birthPlaceId], references: [id])
+  nationalityId     Int
+  nationality       Country  @relation("PlayerNationality", fields: [nationalityId], references: [id])
+  height            Int?     // in cm
+  weight            Int?     // in kg
+  positionId        Int
+  position          Position @relation(fields: [positionId], references: [id])
+  foot              Foot?    // LEFT, RIGHT, BOTH
+  jerseyNumber      Int?
+  imageUrl          String?
+  externalId        String?  @unique
+  contractUntil     DateTime?
+  marketValue       Float?   // Current market value in EUR
+  marketValueDate   DateTime? // Last updated
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  // Relations
+  clubs             PlayerClub[]
+  transfers        Transfer[]
+  stats            PlayerStats[]
+  marketValues     MarketValue[]
+
+  @@map("players")
+}
+
+model Position {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique // "Goalkeeper", "Defender", "Midfielder", "Forward"
+  category    PositionCategory // GK, DEF, MID, FWD
+  createdAt   DateTime @default(now())
+
+  // Relations
+  players     Player[]
+
+  @@map("positions")
+}
+
+// ============================================
+// JUNCTION TABLES
+// ============================================
 
 model ClubSeason {
-  id        Int      @id @default(autoincrement())
-  clubId    Int
-  leagueId  Int
-  season    String   // "2024-25"
-  position  Int?     // final league position
+  id             Int      @id @default(autoincrement())
+  clubId         Int
+  club           Club     @relation(fields: [clubId], references: [id])
+  seasonId       Int
+  season         Season   @relation(fields: [seasonId], references: [id])
+  manager        String?
+  averageAge     Float?
+  foreignPlayers Int?
+  totalMarketValue Float?
+  rank           Int?
+  points        Int?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
-  club      Club     @relation(fields: [clubId], references: [id])
-  league    League   @relation(fields: [leagueId], references: [id])
-
-  @@unique([clubId, leagueId, season])
+  @@unique([clubId, seasonId])
+  @@map("club_seasons")
 }
 
-// Player model
-model Player {
-  id                  Int        @id @default(autoincrement())
-  name                String
-  firstName           String?
-  lastName            String?
-  birthDate           DateTime?
-  birthPlace          String?
-  nationality         String[]
-  position            String?    // "Goalkeeper", "Defender", "Midfielder", "Forward"
-  height              Int?       // in cm
-  weight              Int?       // in kg
-  foot                String?    // "left", "right", "both"
-  currentClubId       Int?
-  contractUntil       DateTime?
-  marketValue         Float?     // in EUR
-  marketValueCurrency String    @default("EUR")
-  image               String?    // URL to player image
-  createdAt           DateTime   @default(now())
-  updatedAt           DateTime   @updatedAt
+model ClubCompetition {
+  id             Int      @id @default(autoincrement())
+  clubId         Int
+  club           Club     @relation(fields: [clubId], references: [id])
+  competitionId  Int
+  competition    Competition @relation(fields: [competitionId], references: [id])
+  seasonId       Int
+  season         Season   @relation(fields: [seasonId], references: [id])
 
-  // Relationships
-  currentClub         Club?      @relation(fields: [currentClubId], references: [id])
-  transfers           Transfer[]
-  stats               PlayerStat[]
-  marketValues        MarketValue[]
-  contractHistory     ContractHistory[]
-
-  @@index([name])
-  @@index([currentClubId])
-  @@index([marketValue])
+  @@unique([clubId, competitionId, seasonId])
+  @@map("club_competitions")
 }
 
-// Transfer model (captures player movement between clubs)
+model PlayerClub {
+  id               Int      @id @default(autoincrement())
+  playerId         Int
+  player           Player   @relation(fields: [playerId], references: [id])
+  clubId           Int
+  club             Club     @relation(fields: [clubId], references: [id])
+  seasonId         Int?
+  season           Season?  @relation(fields: [seasonId], references: [id])
+  joinedDate       DateTime?
+  leftDate         DateTime?
+  contractStart    DateTime?
+  contractEnd      DateTime?
+  jerseyNumber     Int?
+  isOnLoan         Boolean  @default(false)
+  loanFromClubId   Int?     @relation("LoanFromClub", fields: [loanFromClubId], references: [id])
+  loanFromClub     Club?    @relation("LoanFromClub")
+  loanEndDate      DateTime?
+  appearances      Int?     @default(0)
+  goals            Int?     @default(0)
+  assists          Int?     @default(0)
+  minutesPlayed    Int?     @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([playerId, clubId, seasonId])
+  @@map("player_clubs")
+}
+
+// ============================================
+// TRANSFER SYSTEM
+// ============================================
+
 model Transfer {
-  id                Int           @id @default(autoincrement())
-  playerId          Int
-  fromClubId        Int
-  toClubId          Int
-  transferDate      DateTime
-  transferType      String        // "transfer", "loan", "free", "draft"
-  fee               Float?        // in EUR, null if free
-  feeCurrency       String        @default("EUR")
-  loanFee           Float?        // loan fee if applicable
-  loanDuration      Int?          // in months
-  optionToBuy       Boolean       @default(false)
-  optionFee         Float?        // permanent transfer fee after loan
-  contractUntil     DateTime?
-  sourceUrl         String?
-  createdAt         DateTime      @default(now())
+  id               Int      @id @default(autoincrement())
+  playerId         Int
+  player           Player   @relation(fields: [playerId], references: [id])
+  fromClubId       Int
+  fromClub         Club     @relation("FromClub", fields: [fromClubId], references: [id])
+  toClubId         Int
+  toClub           Club     @relation("ToClub", fields: [toClubId], references: [id])
+  seasonId         Int
+  season           Season   @relation(fields: [seasonId], references: [id])
+  transferDate     DateTime
+  fee              Float?   // null = free transfer
+  currency         String   @default("EUR")
+  type             TransferType // PERMANENT, LOAN, LOAN_WITH_OPTION, etc.
+  marketValueAtTransfer Float? // Player's market value at time of transfer
+  isUndisclosed   Boolean  @default(false)
+  loanDuration     Int?     // Months, if loan
+  optionToBuy      Boolean  @default(false)
+  optionFee        Float?
+  sellOnPercentage Float?   // % of future sale
+  sourceUrl        String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
-  // Relationships
-  player            Player        @relation(fields: [playerId], references: [id])
-  fromClub          Club          @relation("TransferFromClub", fields: [fromClubId], references: [id])
-  toClub            Club          @relation("TransferToClub", fields: [toClubId], references: [id])
-
-  @@index([playerId])
-  @@index([transferDate])
-  @@index([fromClubId])
-  @@index([toClubId])
+  @@map("transfers")
 }
 
-// Player statistics per season/competition
-model PlayerStat {
-  id            Int      @id @default(autoincrement())
-  playerId      Int
-  season        String   // "2024-25"
-  competition   String   // "Premier League", "La Liga", "UEFA Champions League"
-  appearances   Int      @default(0)
-  minutesPlayed Int      @default(0)
-  goals         Int      @default(0)
-  assists       Int      @default(0)
-  yellowCards   Int      @default(0)
-  redCards      Int      @default(0)
-  shots         Int      @default(0)
-  shotsOnTarget Int      @default(0)
-  passes        Int      @default(0)
-  keyPasses     Int      @default(0)
-  tackles       Int      @default(0)
-  interceptions Int      @default(0)
+// ============================================
+// STATISTICS & PERFORMANCE
+// ============================================
 
-  player        Player   @relation(fields: [playerId], references: [id])
+model PlayerStats {
+  id                 Int      @id @default(autoincrement())
+  playerId           Int
+  player             Player   @relation(fields: [playerId], references: [id])
+  clubId             Int
+  club               Club     @relation(fields: [clubId], references: [id])
+  seasonId           Int
+  season             Season   @relation(fields: [seasonId], references: [id])
+  competitionType    CompetitionType
+  appearances        Int      @default(0)
+  starts            Int      @default(0)
+  minutesPlayed      Int      @default(0)
+  goals              Int      @default(0)
+  assists            Int      @default(0)
+  yellowCards        Int      @default(0)
+  redCards           Int      @default(0)
+  shots              Int      @default(0)
+  shotsOnTarget      Int      @default(0)
+  passes             Int      @default(0)
+  keyPasses          Int      @default(0)
+  tackles            Int      @default(0)
+  interceptions      Int      @default(0)
+  foulsDrawn         Int      @default(0)
+  foulsCommitted     Int      @default(0)
+  cleanSheets        Int?     @default(0) // For goalkeepers/defenders
+  goalsConceded      Int?     @default(0) // For goalkeepers/defenders
+  saves              Int?     @default(0) // For goalkeepers
+  penaltyGoals       Int?     @default(0)
+  penaltyMissed      Int?     @default(0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  @@unique([playerId, season, competition])
-  @@index([playerId])
-  @@index([season])
+  @@unique([playerId, clubId, seasonId, competitionType])
+  @@map("player_stats")
 }
 
-// Market value history
 model MarketValue {
-  id        Int      @id @default(autoincrement())
-  playerId  Int
-  date      DateTime
-  value     Float    // in EUR
-  currency  String   @default("EUR")
-  source    String?  // "transfermarkt", "estimation", etc.
-  createdAt DateTime @default(now())
-
-  player    Player   @relation(fields: [playerId], references: [id])
+  id         Int      @id @default(autoincrement())
+  playerId   Int
+  player     Player   @relation(fields: [playerId], references: [id])
+  value      Float    // in EUR
+  currency   String   @default("EUR")
+  date       DateTime
+  source     String?  // e.g., "Transfermarkt", " estimation"
+  createdAt  DateTime @default(now())
 
   @@unique([playerId, date])
-  @@index([playerId])
-  @@index([date])
+  @@map("market_values")
 }
 
-// Contract history (tracks all contracts a player has had)
-model ContractHistory {
-  id            Int      @id @default(autoincrement())
-  playerId      Int
-  clubId        Int
-  startDate     DateTime
-  endDate       DateTime?
-  jerseyNumber  Int?
-  salary        Float?   // in EUR, optional for privacy
-  clauses       String?  // JSON string for additional clauses
+// ============================================
+// MATCHES & COMPETITIONS
+// ============================================
 
-  player        Player   @relation(fields: [playerId], references: [id])
-  club          Club     @relation(fields: [clubId], references: [id])
+model Match {
+  id                 Int      @id @default(autoincrement())
+  competitionId      Int
+  competition        Competition @relation(fields: [competitionId], references: [id])
+  seasonId           Int
+  season             Season   @relation(fields: [seasonId], references: [id])
+  homeClubId         Int
+  homeClub           Club     @relation("HomeClub", fields: [homeClubId], references: [id])
+  awayClubId         Int
+  awayClub           Club     @relation("AwayClub", fields: [awayClubId], references: [id])
+  matchDate          DateTime
+  homeScore          Int?
+  awayScore          Int?
+  venue              String?
+  attendance         Int?
+  referee            String?
+  status             MatchStatus // SCHEDULED, LIVE, FINISHED, POSTPONED
+  stage              String?  // e.g., "Group Stage", "Round of 16", "Final"
+  round              String?
+  group              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
-  @@index([playerId])
-  @@index([clubId])
+  @@unique([competitionId, seasonId, homeClubId, awayClubId, matchDate])
+  @@map("matches")
 }
 
-// User model for authentication (if building user accounts)
+// ============================================
+// USER SYSTEM (for future features)
+// ============================================
+
 model User {
   id            Int       @id @default(autoincrement())
   email         String    @unique
+  passwordHash  String?
   name          String?
-  password      String?   // null for OAuth users
-  image         String?
-  role          Role       @default(USER)
+  role          UserRole  @default(USER)
+  avatarUrl     String?
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
 
-  // Relationships
-  watchlist     WatchlistItem[]
-  sessions      Session[]
+  // Relations
+  watchlistPlayers UserPlayer[]
+  watchlistClubs   UserClub[]
+
+  @@map("users")
 }
 
-model Session {
-  id           String   @id
-  userId       Int
-  expiresAt    DateTime
-  sessionToken String?  @unique
-  accessToken  String?
-  createdAt    DateTime  @default(now())
-
-  user         User      @relation(fields: [userId], references: [id])
-}
-
-model WatchlistItem {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  playerId  Int?
-  clubId    Int?
-  createdAt DateTime @default(now())
-
-  user      User     @relation(fields: [userId], references: [id])
-  player    Player?  @relation(fields: [playerId], references: [id])
-  club      Club?    @relation(fields: [clubId], references: [id])
+model UserPlayer {
+  userId     Int
+  user       User   @relation(fields: [userId], references: [id])
+  playerId   Int
+  player     Player @relation(fields: [playerId], references: [id])
+  addedAt    DateTime @default(now())
 
   @@unique([userId, playerId])
-  @@unique([userId, clubId])
+  @@map("user_players")
 }
 
-enum Role {
+model UserClub {
+  userId   Int
+  user     User   @relation(fields: [userId], references: [id])
+  clubId   Int
+  club     Club   @relation(fields: [clubId], references: [id])
+  addedAt  DateTime @default(now())
+
+  @@unique([userId, clubId])
+  @@map("user_clubs")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum CompetitionType {
+  LEAGUE
+  CUP
+  CHAMPIONS_LEAGUE
+  EUROPA_LEAGUE
+  CONFERENCE_LEAGUE
+  SUPER_CUP
+  FRIENDLY
+}
+
+enum PositionCategory {
+  GK  // Goalkeeper
+  DEF // Defender
+  MID // Midfielder
+  FWD // Forward
+}
+
+enum Foot {
+  LEFT
+  RIGHT
+  BOTH
+}
+
+enum TransferType {
+  PERMANENT
+  LOAN
+  LOAN_WITH_OPTION
+  LOAN_WITH_OBLIGATION
+  FREE_TRANSFER
+  RETIRED
+  PROMOTION
+  RELEGATION
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum UserRole {
   USER
   ADMIN
 }
