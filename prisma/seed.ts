@@ -6,16 +6,19 @@ async function main() {
   console.log('🌱 Starting database seeding...')
 
   // Create positions
-  const positions = await prisma.position.createMany({
-    data: [
-      { name: 'Goalkeeper', category: 'GK' },
-      { name: 'Defender', category: 'DEF' },
-      { name: 'Midfielder', category: 'MID' },
-      { name: 'Forward', category: 'FWD' },
-    ],
-    skipDuplicates: true,
-  })
-  console.log(`✓ Created ${positions.count} positions`)
+  for (const position of [
+    { name: 'Goalkeeper', category: 'GK' },
+    { name: 'Defender', category: 'DEF' },
+    { name: 'Midfielder', category: 'MID' },
+    { name: 'Forward', category: 'FWD' },
+  ]) {
+    await prisma.position.upsert({
+      where: { name: position.name },
+      update: {},
+      create: position,
+    })
+  }
+  console.log('✓ Created positions')
 
   // Get positions for reference
   const gk = await prisma.position.findFirst({ where: { category: 'GK' } })
@@ -24,21 +27,24 @@ async function main() {
   const fwd = await prisma.position.findFirst({ where: { category: 'FWD' } })
 
   // Create countries
-  const countries = await prisma.country.createMany({
-    data: [
-      { name: 'England', code: 'GBR', flagUrl: 'https://flagcdn.com/w320/gb.png' },
-      { name: 'Spain', code: 'ESP', flagUrl: 'https://flagcdn.com/w320/es.png' },
-      { name: 'Germany', code: 'DEU', flagUrl: 'https://flagcdn.com/w320/de.png' },
-      { name: 'Italy', code: 'ITA', flagUrl: 'https://flagcdn.com/w320/it.png' },
-      { name: 'France', code: 'FRA', flagUrl: 'https://flagcdn.com/w320/fr.png' },
-      { name: 'Portugal', code: 'PRT', flagUrl: 'https://flagcdn.com/w320/pt.png' },
-      { name: 'Netherlands', code: 'NLD', flagUrl: 'https://flagcdn.com/w320/nl.png' },
-      { name: 'Brazil', code: 'BRA', flagUrl: 'https://flagcdn.com/w320/br.png' },
-      { name: 'Argentina', code: 'ARG', flagUrl: 'https://flagcdn.com/w320/ar.png' },
-    ],
-    skipDuplicates: true,
-  })
-  console.log(`✓ Created ${countries.count} countries`)
+  for (const country of [
+    { name: 'England', code: 'GBR', flagUrl: 'https://flagcdn.com/w320/gb.png' },
+    { name: 'Spain', code: 'ESP', flagUrl: 'https://flagcdn.com/w320/es.png' },
+    { name: 'Germany', code: 'DEU', flagUrl: 'https://flagcdn.com/w320/de.png' },
+    { name: 'Italy', code: 'ITA', flagUrl: 'https://flagcdn.com/w320/it.png' },
+    { name: 'France', code: 'FRA', flagUrl: 'https://flagcdn.com/w320/fr.png' },
+    { name: 'Portugal', code: 'PRT', flagUrl: 'https://flagcdn.com/w320/pt.png' },
+    { name: 'Netherlands', code: 'NLD', flagUrl: 'https://flagcdn.com/w320/nl.png' },
+    { name: 'Brazil', code: 'BRA', flagUrl: 'https://flagcdn.com/w320/br.png' },
+    { name: 'Argentina', code: 'ARG', flagUrl: 'https://flagcdn.com/w320/ar.png' },
+  ]) {
+    await prisma.country.upsert({
+      where: { name: country.name },
+      update: {},
+      create: country,
+    })
+  }
+  console.log('✓ Created countries')
 
   // Get countries
   const england = await prisma.country.findFirst({ where: { name: 'England' } })
@@ -154,14 +160,23 @@ async function main() {
   console.log('✓ Created clubs')
 
   // Link clubs to competitions (ClubCompetition)
-  await prisma.clubCompetition.createMany({
-    data: [
-      { clubId: manUnited.id, competitionId: premierLeague.id, seasonId: currentSeason.id },
-      { clubId: realMadrid.id, competitionId: laliga.id, seasonId: currentSeason.id },
-      { clubId: bayern.id, competitionId: bundesliga.id, seasonId: currentSeason.id },
-    ],
-    skipDuplicates: true,
-  })
+  for (const link of [
+    { clubId: manUnited.id, competitionId: premierLeague.id, seasonId: currentSeason.id },
+    { clubId: realMadrid.id, competitionId: laliga.id, seasonId: currentSeason.id },
+    { clubId: bayern.id, competitionId: bundesliga.id, seasonId: currentSeason.id },
+  ]) {
+    await prisma.clubCompetition.upsert({
+      where: {
+        clubId_competitionId_seasonId: {
+          clubId: link.clubId,
+          competitionId: link.competitionId,
+          seasonId: link.seasonId,
+        },
+      },
+      update: {},
+      create: link,
+    })
+  }
   console.log('✓ Linked clubs to competitions')
 
   // Create players
