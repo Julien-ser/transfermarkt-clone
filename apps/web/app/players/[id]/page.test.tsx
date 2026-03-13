@@ -7,19 +7,19 @@ global.fetch = jest.fn();
 
 // Mock Recharts components to avoid rendering issues in tests
 jest.mock("recharts", () => ({
-  LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>;
-  Line: () => <div data-testid="line" />;
-  XAxis: () => <div data-testid="x-axis" />;
-  YAxis: () => <div data-testid="y-axis" />;
-  CartesianGrid: () => <div data-testid="cartesian-grid" />;
-  Tooltip: () => <div data-testid="tooltip" />;
-  Legend: () => <div data-testid="legend" />;
-  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>;
+  LineChart: ({ children }: { children: React.ReactNode }) => <div data-testid="line-chart">{children}</div>,
+  Line: () => <div data-testid="line" />,
+  XAxis: () => <div data-testid="x-axis" />,
+  YAxis: () => <div data-testid="y-axis" />,
+  CartesianGrid: () => <div data-testid="cartesian-grid" />,
+  Tooltip: () => <div data-testid="tooltip" />,
+  Legend: () => <div data-testid="legend" />,
+  ResponsiveContainer: ({ children }: { children: React.ReactNode }) => <div data-testid="responsive-container">{children}</div>,
 }));
 
 // Mock UI components
 jest.mock("ui", () => ({
-  Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div data-testid="card" {...props}>{children}</div>;
+  Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div data-testid="card" {...props}>{children}</div>,
   Tabs: ({ children, tabs, activeKey, onTabChange }: { children: React.ReactNode; tabs: Array<{key: string; label: string}>; activeKey: string; onTabChange: (key: string) => void }) => (
     <div data-testid="tabs">
       {tabs.map(tab => (
@@ -34,16 +34,16 @@ jest.mock("ui", () => ({
       ))}
       {children}
     </div>
-  );
-  Badge: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <span data-testid="badge" {...props}>{children}</span>;
+  ),
+  Badge: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <span data-testid="badge" {...props}>{children}</span>,
   Avatar: ({ src, alt, size }: { src: string; alt: string; size: string }) => 
-    <img data-testid="avatar" src={src} alt={alt} data-size={size} />;
+    <img data-testid="avatar" src={src} alt={alt} data-size={size} />,
   Table: {
-    Row: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <tr data-testid="table-row" {...props}>{children}</tr>;
-    Cell: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <td data-testid="table-cell" {...props}>{children}</td>;
-    Head: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>;
-    Body: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>;
-    Header: ({ children }: { children: React.ReactNode }) => <th>{children}</th>;
+    Row: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <tr data-testid="table-row" {...props}>{children}</tr>,
+    Cell: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <td data-testid="table-cell" {...props}>{children}</td>,
+    Head: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>,
+    Body: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
+    Header: ({ children }: { children: React.ReactNode }) => <th>{children}</th>,
   },
 }));
 

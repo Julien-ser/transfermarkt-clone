@@ -108,10 +108,11 @@
   - Deliverable: apps/web/app/teams/[id]/page.tsx
   - Content: team badge/logo, league position, current squad (goalkeepers, defenders, midfielders, forwards)
   - Features: sortable player table, filter by position, transfer history for team
-- [ ] Implement league standings page with full table and home/away splits
+- [x] Implement league standings page with full table and home/away splits
   - Deliverable: apps/web/app/leagues/[id]/page.tsx
   - Content: interactive table with sortable columns (P, W, D, L, GF, GA, GD, Pts)
   - Features: hover tooltips, export to CSV, form guide (last 5 matches)
+  - Tests: apps/web/app/leagues/[id]/page.test.tsx
 - [ ] Create transfer history page with filters and advanced search
   - Deliverable: apps/web/app/transfers/page.tsx
   - Filters: date range, league, team, player position, transfer fee range

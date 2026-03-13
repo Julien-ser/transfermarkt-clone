@@ -7,7 +7,7 @@ global.fetch = jest.fn();
 
 // Mock UI components
 jest.mock("ui", () => ({
-  Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div data-testid="card" {...props}>{children}</div>;
+  Card: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <div data-testid="card" {...props}>{children}</div>,
   Tabs: ({ children, tabs, activeKey, onTabChange }: { children: React.ReactNode; tabs: Array<{key: string; label: string}>; activeKey: string; onTabChange: (key: string) => void }) => (
     <div data-testid="tabs">
       {tabs.map(tab => (
@@ -22,22 +22,22 @@ jest.mock("ui", () => ({
       ))}
       {children}
     </div>
-  );
-  Badge: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <span data-testid="badge" {...props}>{children}</span>;
+  ),
+  Badge: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <span data-testid="badge" {...props}>{children}</span>,
   Avatar: ({ src, alt, size }: { src: string; alt: string; size: string }) => 
-    <img data-testid="avatar" src={src} alt={alt} data-size={size} />;
+    <img data-testid="avatar" src={src} alt={alt} data-size={size} />,
   Select: ({ value, onChange, options }: { value: string; onChange: (e: React.ChangeEvent<HTMLSelectElement>) => void; options: Array<{value: string; label: string}> }) => 
     <select data-testid="select" value={value} onChange={onChange}>
       {options.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-    </select>;
+    </select>,
   Button: ({ children, onClick, ...props }: { children: React.ReactNode; onClick: () => void; [key: string]: unknown }) => 
-    <button data-testid="button" onClick={onClick} {...props}>{children}</button>;
+    <button data-testid="button" onClick={onClick} {...props}>{children}</button>,
   Table: {
-    Row: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <tr data-testid="table-row" {...props}>{children}</tr>;
-    Cell: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <td data-testid="table-cell" {...props}>{children}</td>;
-    Head: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>;
-    Body: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>;
-    Header: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <th {...props}>{children}</th>;
+    Row: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <tr data-testid="table-row" {...props}>{children}</tr>,
+    Cell: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <td data-testid="table-cell" {...props}>{children}</td>,
+    Head: ({ children }: { children: React.ReactNode }) => <thead>{children}</thead>,
+    Body: ({ children }: { children: React.ReactNode }) => <tbody>{children}</tbody>,
+    Header: ({ children, ...props }: { children: React.ReactNode; [key: string]: unknown }) => <th {...props}>{children}</th>,
   },
 }));
 
