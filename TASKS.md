@@ -17,7 +17,7 @@
     - State management: Zustand or Redux Toolkit
     - Charts: Recharts or Chart.js for statistics visualization
     - Image optimization: Next.js Image component with Cloudinary/Uploadcare
-- [ ] Initialize monorepo structure with frontend and backend packages
+- [x] Initialize monorepo structure with frontend and backend packages
   - Deliverable: ROOT package.json, pnpm-workspace.yaml, and folder structure:
     ```
     /transfermarkt-clone/
