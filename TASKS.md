@@ -133,10 +133,11 @@
     - Cache invalidation integrated with Redis caching system
     - Historical tracking in MarketValue table
   - Completed: All functionality working, documented, and ready for deployment
-- [ ] Add user accounts with saved players/teams (watchlist feature)
+- [x] Add user accounts with saved players/teams (watchlist feature)
   - Deliverable: User authentication required, saved items persisted to database
   - Features: add/remove from watchlist, watchlist page (/watchlist), badge count in header
   - Database: user_players and user_teams join tables, API endpoints for CRUD operations
+  - Tests: Comprehensive test coverage for watchlist API and page
 - [ ] Optimize performance with image optimization, code splitting, and lazy loading
   - Deliverable: Lighthouse score > 90 on performance
   - Actions: compress images (sharp), implement dynamic imports for heavy components, optimize bundle size

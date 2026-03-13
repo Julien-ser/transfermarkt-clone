@@ -96,20 +96,29 @@ Build a feature-rich platform that provides:
   - ✅ Complete auth flow: registration, login, logout, password reset
   - ✅ Protected routes and API endpoints
   - ✅ User watchlist functionality (players and clubs)
-  - 📝 **Files**:
-    - `apps/web/lib/auth.ts` - NextAuth configuration
-    - `apps/web/app/api/auth/[...nextauth]/route.ts` - Auth API handler
-    - `apps/web/app/api/auth/register/route.ts` - Registration endpoint
-    - `apps/web/app/api/auth/forgot-password/route.ts` - Password reset request
-    - `apps/web/app/api/auth/reset-password/route.ts` - Password reset confirmation
-    - `apps/web/app/api/watchlist/route.ts` - User watchlist CRUD
-    - `apps/web/components/auth/*` - Auth UI components
-    - `apps/web/app/login/page.tsx` - Login page
-    - `apps/web/app/register/page.tsx` - Registration page
-    - `apps/web/app/forgot-password/page.tsx` - Forgot password page
-    - `apps/web/app/reset-password/page.tsx` - Reset password page
-    - `apps/web/app/watchlist/page.tsx` - User watchlist page
-  - 📝 **Environment Variables** (see `.env.example`):
+   - 📝 **Files**:
+     - `apps/web/lib/auth.ts` - NextAuth configuration
+     - `apps/web/app/api/auth/[...nextauth]/route.ts` - Auth API handler
+     - `apps/web/app/api/auth/register/route.ts` - Registration endpoint
+     - `apps/web/app/api/auth/forgot-password/route.ts` - Password reset request
+     - `apps/web/app/api/auth/reset-password/route.ts` - Password reset confirmation
+     - `apps/web/app/api/watchlist/route.ts` - User watchlist CRUD (players & clubs)
+     - `apps/web/components/Header.tsx` - Header with watchlist badge count
+     - `apps/web/app/watchlist/page.tsx` - Watchlist management page
+     - `apps/web/components/auth/*` - Auth UI components
+     - `apps/web/app/login/page.tsx` - Login page
+     - `apps/web/app/register/page.tsx` - Registration page
+     - `apps/web/app/forgot-password/page.tsx` - Forgot password page
+     - `apps/web/app/reset-password/page.tsx` - Reset password page
+   - 📝 **Watchlist Feature**:
+     - Add/remove players and clubs to personal watchlist from any profile page
+     - Dedicated watchlist page at `/watchlist` showing all saved items
+     - Real-time badge count in header showing total watchlist items
+     - Tabs to switch between players and clubs
+     - Remove items directly from watchlist page
+     - Responsive design with empty states
+     - Test coverage: API tests + page integration tests
+   - 📝 **Environment Variables** (see `.env.example`):
     - `GOOGLE_CLIENT_ID` - Google OAuth client ID (optional)
     - `GOOGLE_CLIENT_SECRET` - Google OAuth client secret (optional)
     - `NEXTAUTH_SECRET` - Secret key for JWT signing (required)
@@ -163,6 +172,7 @@ Build a feature-rich platform that provides:
   - ✅ Position-specific stats (Goalkeeper, Defender, Midfielder, Forward)
   - ✅ Transfer timeline with club logos, fees, and loan details
   - ✅ Career history table with season-by-season breakdown
+  - ✅ **Watchlist integration**: Add/remove players from personal watchlist with visual feedback
   - ✅ Full responsive design with dark mode support
   - ✅ Loading states and error handling
   - ✅ API integration with Redis caching (30 min TTL)
@@ -186,7 +196,8 @@ Build a feature-rich platform that provides:
   - ✅ Three-tab interface: Squad, Statistics, Transfer History
   - ✅ Squad tab with position filtering and sorting (jersey, market value, age)
   - ✅ Interactive player table with links to player profiles
-  - ✅ Team statistics summary: total players, market value, average age, foreign players
+  - ✅ **Watchlist integration**: Add/remove teams from personal watchlist with visual feedback
+  - Team statistics summary: total players, market value, average age, foreign players
   - ✅ Position breakdown cards (GK, DEF, MID, FWD) with counts and values
   - ✅ Season statistics table with player performance data
   - ✅ Transfer history with color-coded timelines (inbound green, outbound red)
