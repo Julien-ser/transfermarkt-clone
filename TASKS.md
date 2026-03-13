@@ -120,10 +120,19 @@
 
 ## Phase 4: Advanced Features & Polish
 
-- [ ] Implement real-time market value updates (simulated with cron job)
+- [x] Implement real-time market value updates (simulated with cron job)
   - Deliverable: Background job that updates player market values
   - Features: cron job (node-cron or agenda.js) runs daily, calculates new values based on algorithm
   - Display: "as of" timestamp on market value displays, change percentage indicators
+  - Implementation:
+    - `apps/web/lib/marketValueUpdater.ts` - Market value calculation algorithm with position base values, age factors, performance multipliers, and league tiers
+    - `apps/web/lib/cron-service.ts` - MarketValueScheduler class with configurable cron schedule (default: daily at 2 AM UTC)
+    - `apps/web/scripts/cron-runner.ts` - Standalone runner script for production deployment
+    - `apps/web/lib/marketValueUpdater.test.ts` - Comprehensive test suite (184 lines)
+    - `apps/web/app/api/admin/market-values/update/route.ts` - Admin API for manual updates (POST) and stats (GET)
+    - Cache invalidation integrated with Redis caching system
+    - Historical tracking in MarketValue table
+  - Completed: All functionality working, documented, and ready for deployment
 - [ ] Add user accounts with saved players/teams (watchlist feature)
   - Deliverable: User authentication required, saved items persisted to database
   - Features: add/remove from watchlist, watchlist page (/watchlist), badge count in header
