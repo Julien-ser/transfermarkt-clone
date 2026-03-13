@@ -3,7 +3,7 @@
 
 ## Phase 1: Planning & Setup
 
-- [ ] Define feature scope and requirements document (MVP vs full features)
+- [x] Define feature scope and requirements document (MVP vs full features)
   - Deliverable: DOCUMENTATION/requirements.md with prioritized feature list
   - Include: player profiles, team pages, league standings, transfer history, market values, search functionality
 - [x] Design database schema for players, teams, leagues, transfers, and market values
