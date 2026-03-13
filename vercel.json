@@ -1,0 +1,26 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "apps/web/package.json",
+      "use": "@vercel/next"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "apps/web/$1"
+    }
+  ],
+  "env": {
+    "NEXTAUTH_URL": "@nextauth_url",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "DATABASE_URL": "@database_url",
+    "REDIS_URL": "@redis_url",
+    "NEXT_PUBLIC_SIMPLE_ANALYTICS_DOMAIN": "@simple_analytics_domain",
+    "NEXT_PUBLIC_SENTRY_DSN": "@sentry_dsn",
+    "SENTRY_ENABLED": "true",
+    "CRON_SECRET_TOKEN": "@cron_secret_token",
+    "MARKET_VALUE_UPDATE_SCHEDULE": "0 2 * * *"
+  }
+}

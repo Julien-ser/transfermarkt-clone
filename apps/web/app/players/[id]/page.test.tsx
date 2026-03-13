@@ -258,7 +258,7 @@ describe("PlayerPage", () => {
     render(<PlayerPage params={{ id: "999" }} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Player not found/i)).toBeInTheDocument();
+      expect(screen.getByText(/The requested resource was not found\./i)).toBeInTheDocument();
     });
   });
 
@@ -412,7 +412,8 @@ describe("PlayerPage", () => {
     render(<PlayerPage params={{ id: "1" }} />);
 
     await waitFor(() => {
-      expect(screen.getByText(/Failed to fetch player data/i)).toBeInTheDocument();
+      // Expect server error message from comprehensive error handling
+      expect(screen.getByText(/Server error\. Please try again later\./i)).toBeInTheDocument();
     });
   });
 

@@ -1,0 +1,31 @@
+{
+  "version": "1",
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "cd apps/api && npm install && npm run build",
+    "watchPatterns": ["apps/api/src/**/*"]
+  },
+  "deploy": {
+    "numReplicas": 1,
+    "startCommand": "cd apps/api && npm start",
+    "healthcheckPath": "/health",
+    "healthcheckTimeout": 100,
+    "restartPolicy": {
+      "type": "ON_FAILURE"
+    },
+    "env": {
+      "NODE_ENV": "production",
+      "PORT": "3001"
+    }
+  },
+  "envVars": {
+    "DATABASE_URL": {
+      "fromSecret": "DATABASE_URL"
+    },
+    "REDIS_URL": {
+      "fromSecret": "REDIS_URL"
+    },
+    "PORT": "3001",
+    "NODE_ENV": "production"
+  }
+}

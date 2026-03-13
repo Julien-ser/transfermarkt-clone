@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { Card, Tabs, Badge, Avatar } from "ui";
+import { useFetch } from "@/lib/use-fetch";
 import { formatMarketValue, formatDate, getMarketValueChangeIndicator } from "@/lib/format";
 
 // Lazy load heavy components with dynamic imports
@@ -181,38 +182,23 @@ interface PlayerPageProps {
 
 export default function PlayerPage({ params }: PlayerPageProps) {
   const { data: session } = useSession();
-  const [player, setPlayer] = useState<PlayerData | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+
+  // Fetch player data using useFetch hook with comprehensive error handling, retry logic, and caching
+  const { data: player, loading, error, refetch } = useFetch<PlayerData>(`/api/players/${params.id}`, {
+    cacheKey: `player-${params.id}`,
+    cacheTtl: 30 * 60, // 30 minutes cache
+    retries: 3, // Use default retry logic
+    onError: (err) => {
+      // Optional: log to console in development
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Failed to fetch player:', err);
+      }
+    },
+  });
+
   const [activeTab, setActiveTab] = useState("overview");
   const [isInWatchlist, setIsInWatchlist] = useState<boolean>(false);
   const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
-
-  const fetchPlayer = useCallback(async () => {
-    try {
-      setLoading(true);
-      setError(null);
-      const response = await fetch(`/api/players/${params.id}`);
-      
-      if (!response.ok) {
-        if (response.status === 404) {
-          throw new Error("Player not found");
-        }
-        throw new Error("Failed to fetch player data");
-      }
-      
-      const data = await response.json();
-      setPlayer(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "An error occurred");
-    } finally {
-      setLoading(false);
-    }
-  }, [params.id]);
-
-   useEffect(() => {
-     fetchPlayer();
-   }, [fetchPlayer]);
 
    // Check if player is in watchlist
    useEffect(() => {
@@ -368,6 +354,7 @@ export default function PlayerPage({ params }: PlayerPageProps) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="p-6">
+          <span className="sr-only">Loading player data</span>
           <div className="animate-pulse space-y-4">
             <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
             <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -386,11 +373,33 @@ export default function PlayerPage({ params }: PlayerPageProps) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="p-6">
-          <div className="text-center text-red-600 dark:text-red-400">
-            <p>{error || "Player not found"}</p>
-            <Link href="/players" className="mt-4 inline-block text-blue-600 hover:underline">
-              ← Back to Players
-            </Link>
+          <div className="text-center">
+            <div className="mb-4">
+              <svg className="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {error instanceof Error ? (error as any).userMessage || error.message : "Unable to load player"}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {error instanceof Error && (error as any).userMessage
+                ? "We couldn't load the player data. Please try again."
+                : error instanceof Error
+                ? error.message
+                : "Player not found"}
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={refetch}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+              <Link href="/players" className="px-4 py-2 text-blue-600 hover:underline">
+                Back to Players
+              </Link>
+            </div>
           </div>
         </Card>
       </div>

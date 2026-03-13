@@ -413,22 +413,21 @@ The database consists of the following core entities:
 
 See [ER Diagram →](./SCHEMA/ER-diagram.md) for full entity relationships.
 
-## 📊 Database Schema
+## 📚 Documentation
 
-The database consists of the following core entities:
+- **Requirements**: [DOCUMENTATION/requirements.md](./DOCUMENTATION/requirements.md)
+- **Database Schema**: [SCHEMA/database-schema.sql](./SCHEMA/database-schema.sql)
+- **Architecture**: [ARCHITECTURE/tech-stack.md](./ARCHITECTURE/tech-stack.md)
+- **Deployment Guide**: [DEPLOYMENT.md](./DEPLOYMENT.md) ← **Start here for production deployment**
+- **Development Roadmap**: [TASKS.md](./TASKS.md)
 
-| Entity | Purpose | Key Fields |
-|--------|---------|------------|
-| **Player** | Player profile and current state | name, position, currentClubId, marketValue |
-| **Club** | Team information | name, founded, stadium, leagueId |
-| **League** | Competition data | name, country, season |
-| **Transfer** | Player movement records | playerId, fromClubId, toClubId, fee |
-| **PlayerStat** | Season statistics | playerId, season, goals, assists |
-| **MarketValue** | Value history | playerId, date, value |
-| **Season** | League season context | leagueId, year, isCurrent |
-| **ContractHistory** | Contract timeline | playerId, clubId, startDate, endDate |
+## 🚀 Quick Deploy
 
-See [ER Diagram →](./SCHEMA/ER-diagram.md) for full entity relationships.
+For production deployment instructions, see [DEPLOYMENT.md](./DEPLOYMENT.md).
+
+### Quick Local Development
+
+1. **Clone and install**:
 
 ## 📋 Development Workflow
 
@@ -446,6 +445,139 @@ git add .
 git commit -m "Feature: [description]"
 git push origin main
 ```
+
+## 📊 Analytics & Error Tracking
+
+The application uses privacy-friendly analytics and comprehensive error tracking:
+
+### Simple Analytics (Privacy-Friendly)
+
+Simple Analytics is a GDPR-compliant, cookie-free analytics solution that respects user privacy.
+
+#### Setup
+
+1. Get your free Simple Analytics account at [simpleanalytics.com](https://simpleanalytics.com/)
+2. Add your domain to `.env`:
+   ```env
+   NEXT_PUBLIC_SIMPLE_ANALYTICS_DOMAIN="your-domain.simpleanalytics.com"
+   ```
+3. The analytics script will automatically be loaded on all pages
+
+#### Features
+
+- Page view tracking (automatic)
+- Custom event tracking via `useAnalytics` hook
+- No cookies or personal data collection
+- Fully GDPR/CCPA compliant
+
+#### Usage in Components
+
+```tsx
+"use client";
+
+import { useAnalytics } from "@/hooks/useAnalytics";
+
+export function MyComponent() {
+  const { trackClick, trackEvent, trackSearch } = useAnalytics();
+
+  const handleSearch = (query: string) => {
+    trackSearch(query);
+  };
+
+  const handleButtonClick = () => {
+    trackClick("add_to_watchlist", "Player Profile");
+  };
+
+  const handleCustomEvent = () => {
+    trackEvent("video", "play", "Tutorial Video", 1);
+  };
+
+  return (
+    // ...
+  );
+}
+```
+
+### Sentry (Error Tracking)
+
+Sentry provides real-time error tracking and performance monitoring.
+
+#### Setup
+
+1. Create a project at [sentry.io](https://sentry.io/)
+2. Configure environment variables in `.env`:
+   ```env
+   NEXT_PUBLIC_SENTRY_DSN="https://your-public-key@your-region.sentry.io/your-project-id"
+   SENTRY_ENABLED="true"  # Set to "true" in production
+   ```
+3. Install dependencies:
+   ```bash
+   cd apps/web
+   pnpm install
+   ```
+4. Sentry will automatically:
+   - Capture unhandled errors and promise rejections
+   - Track performance metrics (with tracesSampleRate: 1.0)
+   - Provide stack traces and context for debugging
+
+#### Manual Error Tracking
+
+```tsx
+"use client";
+
+import * as Sentry from "@sentry/nextjs";
+
+// Capture custom errors
+try {
+  // your code
+} catch (error) {
+  Sentry.captureException(error, {
+    tags: { feature: "player-profile" },
+    extra: { playerId: "123" },
+  });
+}
+
+// Manually start a performance transaction
+const transaction = Sentry.startTransaction({
+  name: "custom-transaction",
+  op: "task",
+});
+
+try {
+  // your code
+  transaction.finish();
+} catch (error) {
+  transaction.setStatus("internal_error");
+  transaction.finish();
+  Sentry.captureException(error);
+}
+```
+
+#### Development
+
+- Sentry is disabled by default (`SENTRY_ENABLED="false"`) in development
+- To test, set `SENTRY_ENABLED="true"` in your `.env` file
+- Use `Sentry.init({ debug: true })` to see console logs
+
+### API Response Times
+
+API response times are automatically tracked via Sentry's performance monitoring. Gateway response times are available in the Sentry dashboard under Performance → Transactions.
+
+No additional configuration required - simply ensure `tracesSampleRate: 1.0` is set in `sentry.client.config.ts` (default).
+
+### Privacy Compliance
+
+- Simple Analytics: No cookies, no tracking of personal data, fully GDPR compliant
+- Sentry: Only collects error data and performance metrics (no PII by default)
+- Users can opt-out via browser extensions or Do Not Track signals
+
+## 🔧 Configuration Files
+
+- `.env.example` - All required environment variables
+- `sentry.client.config.ts` - Sentry client configuration
+- `sentry.server.config.ts` - Sentry server configuration
+- `apps/web/components/Analytics.tsx` - Simple Analytics wrapper
+- `apps/web/hooks/useAnalytics.ts` - Analytics hook for custom events
 
 ## ⚡ Performance Optimizations
 

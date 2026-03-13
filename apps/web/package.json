@@ -2,20 +2,21 @@
   "name": "web",
   "version": "0.1.0",
   "private": true,
-   "scripts": {
-     "dev": "concurrently -n \"next,cron\" -c \"blue,green\" \"next dev\" \"tsx scripts/cron-runner.ts\"",
-     "build": "next build",
-     "start": "next start",
-     "lint": "eslint . --ext .ts,.tsx",
-     "type-check": "tsc --noEmit",
-     "test": "jest",
-     "test:watch": "jest --watch",
-     "cron": "tsx scripts/cron-runner.ts",
-     "analyze": "cross-env ANALYZE=true next build",
-     "performance": "tsx scripts/performance-check.ts"
-   },
+  "scripts": {
+    "dev": "concurrently -n \"next,cron\" -c \"blue,green\" \"next dev\" \"tsx scripts/cron-runner.ts\"",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint . --ext .ts,.tsx",
+    "type-check": "tsc --noEmit",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "cron": "tsx scripts/cron-runner.ts",
+    "analyze": "cross-env ANALYZE=true next build",
+    "performance": "tsx scripts/performance-check.ts"
+  },
   "dependencies": {
     "@prisma/client": "^5.22.0",
+    "@sentry/nextjs": "^8.44.0",
     "bcryptjs": "^2.4.3",
     "date-fns": "^3.6.0",
     "ioredis": "^5.10.0",
@@ -27,24 +28,24 @@
     "recharts": "^3.8.0",
     "zod": "^3.25.76"
   },
-   "devDependencies": {
-     "@testing-library/jest-dom": "^6.9.1",
-     "@testing-library/react": "^14.3.1",
-     "@types/bcryptjs": "^2.4.6",
-     "@types/jest": "^29.5.14",
-     "@types/node-cron": "^3.0.11",
-     "@types/react": "^18.2.43",
-     "@types/react-dom": "^18.2.17",
-     "autoprefixer": "^10.4.16",
-     "concurrently": "^8.2.2",
-     "cross-env": "^7.0.3",
-     "eslint": "^8.55.0",
-     "eslint-config-next": "^14.0.4",
-     "jest": "^29.7.0",
-     "jest-environment-jsdom": "^29.7.0",
-     "postcss": "^8.4.32",
-     "tailwindcss": "^3.4.0",
-     "typescript": "^5.3.3",
-     "webpack-bundle-analyzer": "^4.10.2"
-   }
+  "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^14.3.1",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jest": "^29.5.14",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "^18.2.43",
+    "@types/react-dom": "^18.2.17",
+    "autoprefixer": "^10.4.16",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "eslint": "^8.55.0",
+    "eslint-config-next": "^14.0.4",
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0",
+    "postcss": "^8.4.32",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.3.3",
+    "webpack-bundle-analyzer": "^4.10.2"
+  }
 }

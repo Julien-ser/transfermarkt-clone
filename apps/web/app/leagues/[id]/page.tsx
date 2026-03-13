@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
 import { Card, Badge, Avatar, Button } from "ui";
+import { useFetch } from "@/lib/use-fetch";
 import { formatDate } from "@/lib/format";
 
 interface FormMatch {
@@ -311,9 +312,15 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="p-6">
+          <span className="sr-only">Loading league data</span>
           <div className="animate-pulse space-y-4">
-            <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+            <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
             <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            <div className="space-y-2">
+              {[...Array(5)].map((_, i) => (
+                <div key={i} className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+              ))}
+            </div>
           </div>
         </Card>
       </div>
@@ -324,11 +331,29 @@ export default function LeaguePage({ params }: LeaguePageProps) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <Card className="p-6">
-          <div className="text-center text-red-600 dark:text-red-400">
-            <p>{error || "Competition not found"}</p>
-            <Link href="/" className="mt-4 inline-block text-blue-600 hover:underline">
-              ← Back to Home
-            </Link>
+          <div className="text-center">
+            <div className="mb-4">
+              <svg className="mx-auto h-12 w-12 text-red-400" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              {(error as any)?.userMessage || (error as any)?.message || "Unable to load league"}
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-4">
+              {(error as any)?.userMessage ? "We couldn't load the league data. Please try again." : (error as any)?.message || "An error occurred"}
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                onClick={refetchAll}
+                className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+              >
+                Try Again
+              </button>
+              <Link href="/leagues" className="px-4 py-2 text-blue-600 hover:underline">
+                Back to Leagues
+              </Link>
+            </div>
           </div>
         </Card>
       </div>

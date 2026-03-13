@@ -1,0 +1,64 @@
+# Multi-stage build for Next.js
+FROM node:18-alpine AS deps
+
+RUN apk add --no-cache libc6-compat
+
+WORKDIR /app
+
+# Install dependencies based on the preferred package manager
+COPY apps/web/package.json apps/web/package-lock.json* ./
+COPY packages/ui/package.json ../packages/ui/
+COPY packages/types/package.json ../packages/types/
+COPY packages/utils/package.json ../packages/utils/
+COPY prisma ./prisma
+
+RUN npm ci --only=production
+
+# Builder stage
+FROM node:18-alpine AS builder
+
+WORKDIR /app
+
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/prisma ./prisma
+
+COPY apps/web/package.json apps/web/tsconfig.json ./
+COPY apps/web/next.config.js ./
+COPY apps/web/public ./public
+COPY apps/web/src ./src
+COPY packages/ui/src ../packages/ui/src
+COPY packages/types/src ../packages/types/src
+COPY packages/utils/src ../packages/utils/src
+
+# Generate Prisma Client
+RUN npx prisma generate
+
+# Build Next.js
+RUN npm run build
+
+# Production image
+FROM node:18-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV production
+
+RUN addgroup -g 1001 -S nextjs
+RUN adduser -S nextjs -u 1001
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nextjs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nextjs /app/.next/static ./.next/static
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/prisma ./prisma
+COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+ENTRYPOINT ["dumb-init", "--"]
+CMD ["node", "server.js"]

@@ -271,8 +271,21 @@ export class ApiClient {
   }
 }
 
-// Singleton instance
-export const apiClient = new ApiClient();
+// Singleton instance with environment-based configuration
+const getDefaultBaseUrl = () => {
+  // Use environment variable if set (for separate backend deployments)
+  if (typeof window !== 'undefined' && process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // For server-side rendering, also check env
+  if (process.env.NEXT_PUBLIC_API_URL) {
+    return process.env.NEXT_PUBLIC_API_URL;
+  }
+  // Default to relative path for same-origin deployments
+  return '/api';
+};
+
+export const apiClient = new ApiClient(getDefaultBaseUrl());
 
 /**
  * Factory function to create API client with custom base URL

@@ -150,14 +150,28 @@
     - Bundle analyzer setup (npm run analyze)
     - Performance monitoring script (npm run performance)
     - Existing optimizations already in place: Image optimization, code splitting, SWC minify, splitChunks
-- [ ] Implement comprehensive error handling and loading states
+- [x] Implement comprehensive error handling and loading states
   - Deliverable: Consistent loading skeleton components and error boundaries
   - Features: skeleton loaders for all data-fetching components, error boundaries for graceful failures
   - Include: retry logic for API requests, user-friendly error messages
-- [ ] Set up monitoring and analytics (Simple Analytics or Plausible)
-  - Deliverable: Analytics tracking with privacy compliance (GDPR/CCPA)
-  - Track: page views, user interactions, API response times
-  - Configure: analytics dashboard, error tracking with Sentry
+  - Completed: Refactored players, teams, and leagues pages to use useFetch hook with retry logic, enhanced loading states with sr-only text, added comprehensive error UI with retry buttons, and updated tests.
+- [x] Set up monitoring and analytics (Simple Analytics or Plausible) ✅ Complete
+  - ✅ Simple Analytics (privacy-friendly, GDPR compliant) configured with custom domain
+  - ✅ Sentry error tracking integrated with automatic error capture and performance monitoring
+  - ✅ Page view tracking (automatic via Simple Analytics)
+  - ✅ User interaction tracking via useAnalytics hook (clicks, searches, custom events)
+  - ✅ API response time tracking via Sentry performance monitoring (100% sample rate)
+  - ✅ Comprehensive documentation in README.md with usage examples
+  - ✅ Environment variables documented in .env.example and added to .env
+  - ✅ Files created:
+    - `apps/web/components/Analytics.tsx` - Analytics wrapper component
+    - `apps/web/hooks/useAnalytics.ts` - Hook for custom event tracking
+    - `sentry.client.config.ts` - Sentry client configuration (Next.js 14 App Router)
+    - `sentry.server.config.ts` - Sentry server configuration
+    - Updated `.env` and `.env.example` with analytics variables
+    - Updated `README.md` with complete setup and usage guide
+  - 📝 **Next step**: Run `pnpm install` to fetch @sentry/nextjs dependency
+  - 📝 **Configuration**: Set `NEXT_PUBLIC_SIMPLE_ANALYTICS_DOMAIN` and `NEXT_PUBLIC_SENTRY_DSN` in .env to enable
 - [ ] Deploy to Vercel (frontend) and Railway/Render (backend if separate)
   - Deliverable: Live production URL with CI/CD pipeline
   - Actions: configure environment variables, set up database on managed service
