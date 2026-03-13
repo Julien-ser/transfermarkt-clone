@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { Card, Table, Badge, Input, Select, Button, Pagination } from "ui";
+import { Card, Table, Badge, Input, Select, Button, Pagination, Avatar } from "ui";
 import Link from "next/link";
 import { formatDate, formatMarketValue } from "@/lib/format";
 
@@ -49,6 +49,12 @@ interface Position {
   category: string;
 }
 
+interface Competition {
+  id: number;
+  name: string;
+  type: string;
+}
+
 interface TransfersResponse {
   transfers: Transfer[];
   pagination: {
@@ -81,6 +87,7 @@ export default function TransfersPage() {
   const [filters, setFilters] = useState<{
     search: string;
     position: string;
+    competitionId: string;
     fromClubId: string;
     toClubId: string;
     minFee: string;
@@ -94,6 +101,7 @@ export default function TransfersPage() {
   }>({
     search: searchParams.get("search") || "",
     position: searchParams.get("position") || "",
+    competitionId: searchParams.get("competitionId") || "",
     fromClubId: searchParams.get("fromClub") || "",
     toClubId: searchParams.get("toClub") || "",
     minFee: searchParams.get("minFee") || "",
@@ -109,6 +117,7 @@ export default function TransfersPage() {
   const [transfersData, setTransfersData] = useState<TransfersResponse | null>(null);
   const [clubs, setClubs] = useState<Club[]>([]);
   const [positions, setPositions] = useState<Position[]>([]);
+  const [competitions, setCompetitions] = useState<Competition[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -124,13 +133,14 @@ export default function TransfersPage() {
     }
   }, [debouncedSearch]);
 
-  // Fetch clubs and positions for filter dropdowns
+  // Fetch clubs, positions, and competitions for filter dropdowns
   useEffect(() => {
     async function fetchFilterData() {
       try {
-        const [clubsRes, positionsRes] = await Promise.all([
+        const [clubsRes, positionsRes, competitionsRes] = await Promise.all([
           fetch("/api/clubs?limit=100"),
           fetch("/api/positions"),
+          fetch("/api/competitions?type=LEAGUE&limit=100"),
         ]);
 
         if (clubsRes.ok) {
@@ -140,6 +150,10 @@ export default function TransfersPage() {
         if (positionsRes.ok) {
           const positionsData = await positionsRes.json();
           setPositions(positionsData.positions || []);
+        }
+        if (competitionsRes.ok) {
+          const competitionsData = await competitionsRes.json();
+          setCompetitions(competitionsData.competitions || []);
         }
       } catch (err) {
         console.error("Failed to fetch filter data:", err);
@@ -154,6 +168,7 @@ export default function TransfersPage() {
 
     if (newFilters.search) params.set("search", newFilters.search);
     if (newFilters.position) params.set("position", newFilters.position);
+    if (newFilters.competitionId) params.set("competitionId", newFilters.competitionId);
     if (newFilters.fromClubId) params.set("fromClub", newFilters.fromClubId);
     if (newFilters.toClubId) params.set("toClub", newFilters.toClubId);
     if (newFilters.minFee) params.set("minFee", newFilters.minFee);
@@ -177,6 +192,7 @@ export default function TransfersPage() {
       const params = new URLSearchParams();
       if (filters.search) params.set("playerName", filters.search);
       if (filters.position) params.set("positionId", filters.position);
+      if (filters.competitionId) params.set("competitionId", filters.competitionId);
       if (filters.fromClubId) params.set("fromClubId", filters.fromClubId);
       if (filters.toClubId) params.set("toClubId", filters.toClubId);
       if (filters.minFee) params.set("minFee", filters.minFee);
@@ -233,6 +249,7 @@ export default function TransfersPage() {
     const clearedFilters: typeof filters = {
       search: "",
       position: "",
+      competitionId: "",
       fromClubId: "",
       toClubId: "",
       minFee: "",
@@ -252,6 +269,7 @@ export default function TransfersPage() {
     let count = 0;
     if (filters.search) count++;
     if (filters.position) count++;
+    if (filters.competitionId) count++;
     if (filters.fromClubId) count++;
     if (filters.toClubId) count++;
     if (filters.minFee) count++;
@@ -386,6 +404,13 @@ export default function TransfersPage() {
       .map(club => ({ value: club.id.toString(), label: club.name }));
   }, [clubs]);
 
+  const competitionOptions = useMemo(() => {
+    return competitions
+      .filter(c => c.type === "LEAGUE")
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(comp => ({ value: comp.id.toString(), label: comp.name }));
+  }, [competitions]);
+
   if (loading && !transfersData) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -518,7 +543,23 @@ export default function TransfersPage() {
           </div>
         </div>
 
-        {/* Third Row - Sort & Pagination */}
+        {/* Third Row - League Filter */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+          <div>
+            <Select
+              label="League"
+              value={filters.competitionId}
+              onChange={(value) => handleFilterChange('competitionId', value)}
+              options={competitionOptions}
+              placeholder="All Leagues"
+            />
+          </div>
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+
+        {/* Fourth Row - Sort & Pagination */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
           {/* Items per page */}
           <div>

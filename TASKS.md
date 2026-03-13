@@ -113,7 +113,7 @@
   - Content: interactive table with sortable columns (P, W, D, L, GF, GA, GD, Pts)
   - Features: hover tooltips, export to CSV, form guide (last 5 matches)
   - Tests: apps/web/app/leagues/[id]/page.test.tsx
-- [ ] Create transfer history page with filters and advanced search
+- [x] Create transfer history page with filters and advanced search
   - Deliverable: apps/web/app/transfers/page.tsx
   - Filters: date range, league, team, player position, transfer fee range
   - Features: debounced search, URL query parameters for filter state, pagination

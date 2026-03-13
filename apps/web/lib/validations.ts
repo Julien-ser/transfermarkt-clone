@@ -88,6 +88,7 @@ export const transferSearchSchema = z.object({
   playerId: z.number().int().positive().optional(),
   fromClubId: z.number().int().positive().optional(),
   toClubId: z.number().int().positive().optional(),
+  competitionId: z.number().int().positive().optional(),
   seasonId: z.number().int().positive().optional(),
   minFee: z.number().positive().optional(),
   maxFee: z.number().positive().optional(),

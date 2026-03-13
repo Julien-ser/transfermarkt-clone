@@ -156,17 +156,6 @@ Build a feature-rich platform that provides:
     - `apps/web/components/home/LatestTransfersTable.tsx` - Transfers table with infinite scroll
     - `apps/web/components/home/MarketValueLeaders.tsx` - Top market value players
     - `apps/web/components/home/SearchBar.tsx` - Global search component
-  - ✅ Redis integration with ioredis client and connection pooling
-  - ✅ Cache helper with TTL management and pattern invalidation
-  - ✅ Cached data: league standings, player market values, team rosters
-  - ✅ Optimized endpoints: players list, player detail, clubs list, club detail, competitions list, competition detail, league standings
-  - ✅ Automatic cache invalidation on mutations (create/update/delete)
-  - ✅ Pattern-based invalidation for related data consistency
-  - 📝 **Configuration**: `REDIS_URL` in `.env` (default: `redis://localhost:6379`)
-  - 📝 **Files**:
-    - `apps/web/lib/cache.ts` - Cache client and helpers
-    - `apps/web/app/api/competitions/[id]/standings/route.ts` - Standings endpoint with caching
-    - Updated API routes with cache invalidation logic
 - [x] **Develop player profile page with detailed statistics** ✅ Complete
   - ✅ Comprehensive player profile with detailed statistics and market value tracking
   - ✅ Multi-tab interface: Overview, Statistics, Transfer History, Career History
@@ -192,7 +181,6 @@ Build a feature-rich platform that provides:
   - ✅ Test coverage: 12 test cases covering all functionality
     - Loading states, error handling, data display, tab switching, position-specific stats
     - Transfer timeline, career history, market value chart, navigation links
-
 - [x] **Build team page with squad list and statistics** ✅ Complete
   - ✅ Comprehensive team/club page with squad roster and transfer history
   - ✅ Three-tab interface: Squad, Statistics, Transfer History
@@ -221,6 +209,36 @@ Build a feature-rich platform that provides:
     - Statistics cards, position breakdown, season stats, transfer history
     - Team badge fallback, age calculation, foreign player count, stadium capacity
     - Player navigation links, transfer formatting
+- [x] **Create transfer history page with filters and advanced search** ✅ Complete
+  - ✅ Comprehensive transfer history page with advanced filtering and search
+  - ✅ Filters: player name (debounced), position, league (competition), from club, to club, fee range (min/max), date range (min/max)
+  - ✅ URL query parameter persistence for all filters, pagination, and sorting
+  - ✅ Debounced search input (500ms delay) to reduce API calls
+  - ✅ Pagination with configurable items per page (10, 20, 50, 100)
+  - ✅ Sorting by transfer date and fee (ascending/descending)
+  - ✅ Clear filters button with active filter count badge
+  - ✅ Responsive filter layout with 4-column grid
+  - ✅ Interactive transfers table with player info, club logos, dates, fees, and badges
+  - ✅ Transfer type badges (PERMANENT, LOAN, etc.) and fee formatting
+  - ✅ Legend explaining badge meanings
+  - ✅ Loading and error states with retry functionality
+  - ✅ API integration with Redis caching and competition filtering via season relationship
+  - 📝 **Files**:
+    - `apps/web/app/transfers/page.tsx` (updated with league filter)
+    - `apps/web/app/transfers/page.test.tsx` (new test suite with 12 tests)
+    - `apps/web/app/api/transfers/route.ts` (updated to support competitionId filter)
+    - `apps/web/lib/validations.ts` (added competitionId to transferSearchSchema)
+  - 📝 **Features**:
+    - Search by player name with debouncing
+    - Filter by position, league/competition, from/to clubs
+    - Filter by transfer fee range (supports free transfers)
+    - Filter by date range (YYYY-MM-DD format)
+    - Active filter count badge on clear button
+    - Table columns: Player (with avatar), From Club, To Club, Date, Type, Fee, Season
+    - Pagination controls and per-page selector
+    - Sorting controls for date and fee
+    - Full dark mode support
+  - ✅ Test coverage: 12 test cases covering rendering, filtering, pagination, URL updates, error/empty states
 
 ## 🔧 Prerequisites
 

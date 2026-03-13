@@ -20,6 +20,7 @@ export async function GET(request: NextRequest) {
       playerId: search.playerId || "",
       fromClubId: search.fromClubId || "",
       toClubId: search.toClubId || "",
+      competitionId: search.competitionId || "",
       seasonId: search.seasonId || "",
       minFee: search.minFee || "",
       maxFee: search.maxFee || "",
@@ -51,6 +52,16 @@ export async function GET(request: NextRequest) {
 
         if (search.seasonId) {
           where.seasonId = search.seasonId;
+        }
+
+        if (search.competitionId) {
+          where.season = {
+            competitions: {
+              some: {
+                id: search.competitionId
+              }
+            }
+          };
         }
 
         // Fee filtering (handle null for free transfers)
