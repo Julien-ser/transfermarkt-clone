@@ -120,8 +120,6 @@ export async function GET(request: NextRequest) {
       { status: error instanceof Error && error.message.includes("Invalid") ? 400 : 500 }
     );
   }
-}
-}
 
 export async function POST(request: NextRequest) {
   try {
