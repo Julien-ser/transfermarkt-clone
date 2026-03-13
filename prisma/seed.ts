@@ -62,7 +62,7 @@ async function main() {
 
   // Create competitions
   const premierLeague = await prisma.competition.upsert({
-    where: { name: 'Premier League' },
+    where: { externalId: 'GB1' },
     update: {},
     create: {
       name: 'Premier League',
@@ -74,7 +74,7 @@ async function main() {
   })
 
   const laliga = await prisma.competition.upsert({
-    where: { name: 'La Liga' },
+    where: { externalId: 'ES1' },
     update: {},
     create: {
       name: 'La Liga',
@@ -86,7 +86,7 @@ async function main() {
   })
 
   const bundesliga = await prisma.competition.upsert({
-    where: { name: 'Bundesliga' },
+    where: { externalId: 'DE1' },
     update: {},
     create: {
       name: 'Bundesliga',
