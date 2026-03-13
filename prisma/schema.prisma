@@ -62,6 +62,8 @@ model Season {
   playerStats  PlayerStats[]
   matches      Match[]
   clubSeasons  ClubSeason[]
+  clubCompetitions ClubCompetition[]
+  playerClubs  PlayerClub[]
 
   @@unique([year])
   @@map("seasons")
@@ -94,6 +96,9 @@ model Club {
   transfersTo    Transfer[] @relation("ToClub")
   homeMatches    Match[]     @relation("HomeClub")
   awayMatches    Match[]     @relation("AwayClub")
+  playerStats    PlayerStats[]
+  userClubs      UserClub[]
+  loanFromClub   PlayerClub[] @relation("LoanFromClub")
 
   @@map("clubs")
 }
@@ -128,6 +133,7 @@ model Player {
   transfers        Transfer[]
   stats            PlayerStats[]
   marketValues     MarketValue[]
+  userPlayers      UserPlayer[]
 
   @@map("players")
 }
@@ -194,8 +200,8 @@ model PlayerClub {
   contractEnd      DateTime?
   jerseyNumber     Int?
   isOnLoan         Boolean  @default(false)
-  loanFromClubId   Int?     @relation("LoanFromClub", fields: [loanFromClubId], references: [id])
-  loanFromClub     Club?    @relation("LoanFromClub")
+  loanFromClubId   Int?
+  loanFromClub     Club?    @relation("LoanFromClub", fields: [loanFromClubId], references: [id])
   loanEndDate      DateTime?
   appearances      Int?     @default(0)
   goals            Int?     @default(0)
