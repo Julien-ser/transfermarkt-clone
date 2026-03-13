@@ -11,6 +11,7 @@ export const CACHE_TTL = {
   LEAGUE_STANDINGS: 300, // 5 minutes
   MARKET_VALUES: 1800, // 30 minutes
   SQUAD_ROSTER: 600, // 10 minutes
+  TRANSFERS_LIST: 300, // 5 minutes
 };
 
 // Cache key generators

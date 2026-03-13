@@ -82,3 +82,19 @@ export const competitionSearchSchema = z.object({
   sortBy: z.enum(["name", "type"]).optional().default("name"),
   sortOrder: z.enum(["asc", "desc"]).optional().default("asc"),
 });
+
+// Transfer validation schemas
+export const transferSearchSchema = z.object({
+  playerId: z.number().int().positive().optional(),
+  fromClubId: z.number().int().positive().optional(),
+  toClubId: z.number().int().positive().optional(),
+  seasonId: z.number().int().positive().optional(),
+  minFee: z.number().positive().optional(),
+  maxFee: z.number().positive().optional(),
+  minDate: z.string().datetime().optional(),
+  maxDate: z.string().datetime().optional(),
+  page: z.number().int().positive().optional().default(1),
+  limit: z.number().int().positive().max(100).optional().default(20),
+  sortBy: z.enum(["transferDate", "fee"]).optional().default("transferDate"),
+  sortOrder: z.enum(["asc", "desc"]).optional().default("desc"),
+});
