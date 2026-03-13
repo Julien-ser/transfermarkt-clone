@@ -165,7 +165,7 @@ export function Table<T extends Record<string, unknown>>({
             : data.map((row, index) => (
                 <tr
                   key={String(row[rowKey] ?? index)}
-                  className={`${getRowStyle(index)} ${hoverable ? 'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150' : ''`}
+                   className={`${getRowStyle(index)} ${hoverable ? 'hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150' : ''}`}
                   role="row"
                 >
                   {columns.map((column) => (

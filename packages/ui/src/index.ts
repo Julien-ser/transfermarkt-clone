@@ -1,7 +1,10 @@
-// Export shared UI components
-export * from './components';
-
-// Re-export common React primitives if needed
-export { default as Button } from './components/Button';
-export { default as Card } from './components/Card';
-export { default as Badge } from './components/Badge';
+// Export all UI components
+export * from './Avatar';
+export * from './Badge';
+export * from './Button';
+export * from './Card';
+export * from './Input';
+export * from './Modal';
+export * from './Select';
+export * from './Table';
+export * from './Tabs';
