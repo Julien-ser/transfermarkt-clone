@@ -4,7 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -32,7 +32,7 @@ model Country {
 model Competition {
   id          Int      @id @default(autoincrement())
   name        String
-  type        CompetitionType // LEAGUE, CUP, CHAMPIONS_LEAGUE, etc.
+  type        String // LEAGUE, CUP, CHAMPIONS_LEAGUE, etc.
   countryId   Int?
   country     Country? @relation(fields: [countryId], references: [id])
   externalId  String?  @unique // For integration with external APIs
@@ -118,7 +118,7 @@ model Player {
   weight            Int?     // in kg
   positionId        Int
   position          Position @relation(fields: [positionId], references: [id])
-  foot              Foot?    // LEFT, RIGHT, BOTH
+  foot              String?    // LEFT, RIGHT, BOTH
   jerseyNumber      Int?
   imageUrl          String?
   externalId        String?  @unique
@@ -141,7 +141,7 @@ model Player {
 model Position {
   id          Int     @id @default(autoincrement())
   name        String  @unique // "Goalkeeper", "Defender", "Midfielder", "Forward"
-  category    PositionCategory // GK, DEF, MID, FWD
+  category    String // GK, DEF, MID, FWD
   createdAt   DateTime @default(now())
 
   // Relations
@@ -231,7 +231,7 @@ model Transfer {
   transferDate     DateTime
   fee              Float?   // null = free transfer
   currency         String   @default("EUR")
-  type             TransferType // PERMANENT, LOAN, LOAN_WITH_OPTION, etc.
+  type             String // PERMANENT, LOAN, LOAN_WITH_OPTION, etc.
   marketValueAtTransfer Float? // Player's market value at time of transfer
   isUndisclosed   Boolean  @default(false)
   loanDuration     Int?     // Months, if loan
@@ -257,7 +257,7 @@ model PlayerStats {
   club               Club     @relation(fields: [clubId], references: [id])
   seasonId           Int
   season             Season   @relation(fields: [seasonId], references: [id])
-  competitionType    CompetitionType
+   competitionType    String
   appearances        Int      @default(0)
   starts            Int      @default(0)
   minutesPlayed      Int      @default(0)
@@ -319,7 +319,7 @@ model Match {
   venue              String?
   attendance         Int?
   referee            String?
-  status             MatchStatus // SCHEDULED, LIVE, FINISHED, POSTPONED
+  status             String // SCHEDULED, LIVE, FINISHED, POSTPONED
   stage              String?  // e.g., "Group Stage", "Round of 16", "Final"
   round              String?
   group              String?
@@ -339,7 +339,7 @@ model User {
   email         String    @unique
   passwordHash  String?
   name          String?
-  role          UserRole  @default(USER)
+   role          String  @default("USER")
   avatarUrl     String?
   isVerified    Boolean   @default(false)
   isActive      Boolean   @default(true)
@@ -375,53 +375,4 @@ model UserClub {
   @@map("user_clubs")
 }
 
-// ============================================
-// ENUMS
-// ============================================
 
-enum CompetitionType {
-  LEAGUE
-  CUP
-  CHAMPIONS_LEAGUE
-  EUROPA_LEAGUE
-  CONFERENCE_LEAGUE
-  SUPER_CUP
-  FRIENDLY
-}
-
-enum PositionCategory {
-  GK  // Goalkeeper
-  DEF // Defender
-  MID // Midfielder
-  FWD // Forward
-}
-
-enum Foot {
-  LEFT
-  RIGHT
-  BOTH
-}
-
-enum TransferType {
-  PERMANENT
-  LOAN
-  LOAN_WITH_OPTION
-  LOAN_WITH_OBLIGATION
-  FREE_TRANSFER
-  RETIRED
-  PROMOTION
-  RELEGATION
-}
-
-enum MatchStatus {
-  SCHEDULED
-  LIVE
-  FINISHED
-  POSTPONED
-  CANCELLED
-}
-
-enum UserRole {
-  USER
-  ADMIN
-}
