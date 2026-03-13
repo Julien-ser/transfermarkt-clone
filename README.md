@@ -193,6 +193,35 @@ Build a feature-rich platform that provides:
     - Loading states, error handling, data display, tab switching, position-specific stats
     - Transfer timeline, career history, market value chart, navigation links
 
+- [x] **Build team page with squad list and statistics** ✅ Complete
+  - ✅ Comprehensive team/club page with squad roster and transfer history
+  - ✅ Three-tab interface: Squad, Statistics, Transfer History
+  - ✅ Squad tab with position filtering and sorting (jersey, market value, age)
+  - ✅ Interactive player table with links to player profiles
+  - ✅ Team statistics summary: total players, market value, average age, foreign players
+  - ✅ Position breakdown cards (GK, DEF, MID, FWD) with counts and values
+  - ✅ Season statistics table with player performance data
+  - ✅ Transfer history with color-coded timelines (inbound green, outbound red)
+  - ✅ Full responsive design with dark mode support
+  - ✅ Loading states, error handling, and fallback UI for missing logos
+  - ✅ API integration with Redis caching (30 min TTL)
+  - 📝 **Files**:
+    - `apps/web/app/teams/[id]/page.tsx` (844 lines) - Main team page component
+    - `apps/web/app/teams/[id]/page.test.tsx` (719 lines) - Comprehensive test suite (18 tests)
+    - `apps/web/app/api/clubs/[id]/route.ts` - Club API with caching and full data relationships
+  - 📝 **Features**:
+    - Team header with logo, name, short name, country badge, founded year, stadium
+    - Squad size and total market value display
+    - Stadium capacity, average age, foreign players count, website link
+    - Player cards with avatar, position badge, nationality, jersey number, market value, contract
+    - Transfer details with dates, fees, loan info, option to buy
+    - Links to player pages and club logos in transfer timeline
+  - ✅ Test coverage: 18 test cases covering all functionality
+    - Loading states, error handling, tab switching, squad table, filtering, sorting
+    - Statistics cards, position breakdown, season stats, transfer history
+    - Team badge fallback, age calculation, foreign player count, stadium capacity
+    - Player navigation links, transfer formatting
+
 ## 🔧 Prerequisites
 
 Before running this project, ensure you have:
@@ -470,4 +499,4 @@ MIT
 
 ---
 
-**Status**: Phase 3 in progress - Homepage complete ✅
+**Status**: Phase 3 in progress - Homepage, Player Profile, and Team pages complete ✅

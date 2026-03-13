@@ -104,7 +104,7 @@
   - Testing: Comprehensive test suite with 12 test cases covering all functionality
   - Files: apps/web/app/players/[id]/page.tsx (776 lines), page.test.tsx (432 lines)
   - Verified: All tests passing, responsive design, dark mode support, loading/error states
-- [ ] Build team page with squad list and statistics
+- [x] Build team page with squad list and statistics
   - Deliverable: apps/web/app/teams/[id]/page.tsx
   - Content: team badge/logo, league position, current squad (goalkeepers, defenders, midfielders, forwards)
   - Features: sortable player table, filter by position, transfer history for team
