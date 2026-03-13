@@ -47,10 +47,18 @@
   - Deliverable: Complete auth flow: sign up, login, logout, password reset
   - Features: email/password, OAuth (Google), session management, protected routes
   - Files: apps/web/components/auth/*, apps/api/route/auth/* (if standalone backend)
-- [ ] Build CRUD API endpoints for core entities (players, teams, leagues)
+- [x] Build CRUD API endpoints for core entities (players, teams, leagues)
   - Deliverable: RESTful API endpoints with proper error handling and validation
   - Endpoints: GET/POST/PUT/DELETE for players, teams, leagues
   - Include: request validation (Zod), response formatting, pagination, filtering
+  - Files created:
+    - apps/web/lib/validations.ts (zod schemas)
+    - apps/web/app/api/players/route.ts (list + create)
+    - apps/web/app/api/players/[id]/route.ts (get + update + delete)
+    - apps/web/app/api/clubs/route.ts (list + create)
+    - apps/web/app/api/clubs/[id]/route.ts (get + update + delete)
+    - apps/web/app/api/competitions/route.ts (list + create)
+    - apps/web/app/api/competitions/[id]/route.ts (get + update + delete)
 - [ ] Create data seeding scripts with sample football data
   - Deliverable: prisma/seed.ts with realistic sample data for testing
   - Include: ~50 players, ~10 teams, 1-2 leagues, transfer records, market value history
