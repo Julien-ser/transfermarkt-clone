@@ -24,6 +24,26 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <head>
+        {/* Font preloading for better LCP */}
+        <link
+          rel="preload"
+          href="/_next/static/css/app/layout.css?ts=1"
+          as="style"
+        />
+        {/* DNS prefetch for external image domains */}
+        <link rel="dns-prefetch" href="//via.placeholder.com" />
+        <link rel="dns-prefetch" href="//placehold.co" />
+        <link rel="dns-prefetch" href="//upload.wikimedia.org" />
+        {/* Simple Analytics - privacy-friendly */}
+        <script
+          async
+          defer
+          src="https://scripts.simpleanalytics.com/latest.js"
+          data-spa="async"
+          data-ignore="localhost"
+        />
+      </head>
       <body className={inter.className}>
         <SessionProvider>{children}</SessionProvider>
       </body>

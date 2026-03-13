@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { Suspense, lazy } from "react";
 import { SearchBar } from "@/components/home/SearchBar";
 import { Card } from "ui";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Dynamic imports for below-the-fold components
 const FeaturedLeaguesCarousel = lazy(() => 
@@ -80,9 +81,10 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen">
-      {/* Navigation */}
-      <nav className="bg-blue-600 shadow-lg">
+    <ErrorBoundary>
+      <div className="min-h-screen">
+        {/* Navigation */}
+        <nav className="bg-blue-600 shadow-lg">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
@@ -199,8 +201,9 @@ export default function HomePage() {
               This is a clone for educational purposes.
             </p>
           </div>
-        </div>
-      </footer>
-    </div>
-  );
+         </div>
+       </footer>
+     </div>
+   </ErrorBoundary>
+ );
 }

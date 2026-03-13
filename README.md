@@ -447,6 +447,78 @@ git commit -m "Feature: [description]"
 git push origin main
 ```
 
+## ⚡ Performance Optimizations
+
+The application implements a comprehensive performance strategy to achieve Lighthouse scores > 90:
+
+### Implemented Optimizations
+
+| Category | Implementation |
+|----------|----------------|
+| **Image Optimization** | Next.js Image component with WebP/AVIF support, lazy loading, responsive sizing |
+| **Code Splitting** | Dynamic imports for heavy components (charts, tables), chunk splitting for vendor libraries |
+| **Font Optimization** | Preloading critical fonts, DNS prefetch for external image domains |
+| **Bundle Size** | SWC minification, dependency optimization (recharts, date-fns), splitChunks config |
+| **Caching** | Redis caching for API responses (5-60 min TTL), static asset caching with long TTL |
+| **Prefetching** | Route prefetching for navigation links to improve perceived performance |
+| **Error Boundaries** | Graceful error handling with retry functionality |
+| **Analytics** | Simple Analytics (privacy-friendly, no cookies) |
+
+### Performance Testing
+
+#### Build Analysis
+
+```bash
+# Generate bundle analysis report
+cd apps/web
+npm run analyze
+
+# Open bundle-analysis.html in your browser to visualize bundle composition
+```
+
+#### Performance Check Script
+
+```bash
+cd apps/web
+npm run performance
+```
+
+This script analyzes:
+- Total bundle size
+- Largest chunks
+- Configuration completeness
+- Recommendations for improvements
+
+#### Lighthouse Audit
+
+1. Start the development server: `npm run dev`
+2. Open http://localhost:3000
+3. Open Chrome DevTools → Lighthouse tab
+4. Run audit with "Performance" category selected
+5. Target score: > 90
+
+#### Key Metrics to Monitor
+
+- **LCP (Largest Contentful Paint)**: < 2.5s (font preloading + image optimization)
+- **FID (First Input Delay)**: < 100ms (code splitting + React optimizations)
+- **CLS (Cumulative Layout Shift)**: < 0.1 (sized images + font display swap)
+- **TTI (Time to Interactive)**: < 3.8s (bundle analysis + minification)
+
+### Configuration Files
+
+- `apps/web/next.config.js` - Next.js configuration with performance settings
+- `apps/web/app/layout.tsx` - Font preloading and DNS prefetch
+- `apps/web/components/ErrorBoundary.tsx` - Error handling component
+- `apps/web/scripts/performance-check.ts` - Performance analysis script
+
+### Ongoing Optimization
+
+- Regularly check bundle sizes with `npm run analyze`
+- Monitor Lighthouse scores on each major feature update
+- Use React DevTools Profiler to identify component rendering issues
+- Keep dependencies up to date and remove unused imports
+- Consider code splitting for any new heavy components
+
 ## 🔥 Redis Caching Implementation
 
 The application implements a comprehensive Redis caching strategy to improve performance and reduce database load for frequently accessed data.

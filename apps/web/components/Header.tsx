@@ -49,10 +49,11 @@ export function Header() {
             ) : session ? (
               <>
                 <span className="text-white">Welcome, {session.user?.name || session.user?.email}</span>
-                <Link
-                  href="/watchlist"
-                  className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
-                >
+             <Link
+               href="/watchlist"
+               className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium inline-flex items-center"
+               prefetch
+             >
                   Watchlist
                   {watchlistCount > 0 && (
                     <span className="ml-2 bg-red-500 text-white text-xs rounded-full px-2 py-0.5">
@@ -72,12 +73,14 @@ export function Header() {
                 <Link
                   href="/login"
                   className="text-white hover:text-gray-200 px-3 py-2 rounded-md text-sm font-medium"
+                  prefetch
                 >
                   Sign In
                 </Link>
                 <Link
                   href="/register"
                   className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                  prefetch
                 >
                   Sign Up
                 </Link>

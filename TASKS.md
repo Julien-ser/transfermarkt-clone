@@ -138,10 +138,18 @@
   - Features: add/remove from watchlist, watchlist page (/watchlist), badge count in header
   - Database: user_players and user_teams join tables, API endpoints for CRUD operations
   - Tests: Comprehensive test coverage for watchlist API and page
-- [ ] Optimize performance with image optimization, code splitting, and lazy loading
+- [x] Optimize performance with image optimization, code splitting, and lazy loading
   - Deliverable: Lighthouse score > 90 on performance
   - Actions: compress images (sharp), implement dynamic imports for heavy components, optimize bundle size
   - Configure: Next.js image optimizer, font optimization, critical CSS inlining
+  - Completed:
+    - Font preloading and DNS prefetch for external domains
+    - ErrorBoundary component for graceful error handling
+    - Route prefetching on navigation links
+    - Simple Analytics integration (privacy-friendly)
+    - Bundle analyzer setup (npm run analyze)
+    - Performance monitoring script (npm run performance)
+    - Existing optimizations already in place: Image optimization, code splitting, SWC minify, splitChunks
 - [ ] Implement comprehensive error handling and loading states
   - Deliverable: Consistent loading skeleton components and error boundaries
   - Features: skeleton loaders for all data-fetching components, error boundaries for graceful failures

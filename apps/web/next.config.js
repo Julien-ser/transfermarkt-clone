@@ -1,8 +1,25 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-  // Performance optimizations
-  reactStrictMode: true,
-  swcMinify: true,
+ /** @type {import('next').NextConfig} */
+ const nextConfig = {
+   // Performance optimizations
+   reactStrictMode: true,
+   swcMinify: true,
+ 
+   // Bundle analyzer for performance monitoring
+   ...(process.env.ANALYZE === 'true' && {
+     webpack: (config, { defaultLoaders, isServer }) => {
+       if (!isServer) {
+         const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer');
+         config.plugins.push(
+           new BundleAnalyzerPlugin({
+             analyzerMode: 'static',
+             reportFilename: '../bundle-analysis.html',
+             openAnalyzer: false,
+           })
+         );
+       }
+       return config;
+     },
+   }),
 
   // Image optimization
   images: {
