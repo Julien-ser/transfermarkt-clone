@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useSession } from "next-auth/react";
 import Link from "next/link";
 import { Card, Tabs, Badge, Avatar, Table } from "ui";
 import { formatMarketValue, formatDate, getMarketValueChangeIndicator } from "@/lib/format";
@@ -171,10 +172,13 @@ interface PlayerPageProps {
 }
 
 export default function PlayerPage({ params }: PlayerPageProps) {
+  const { data: session } = useSession();
   const [player, setPlayer] = useState<PlayerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isInWatchlist, setIsInWatchlist] = useState<boolean>(false);
+  const [watchlistLoading, setWatchlistLoading] = useState<boolean>(false);
 
   const fetchPlayer = useCallback(async () => {
     try {
@@ -198,9 +202,61 @@ export default function PlayerPage({ params }: PlayerPageProps) {
     }
   }, [params.id]);
 
-  useEffect(() => {
-    fetchPlayer();
-  }, [fetchPlayer]);
+   useEffect(() => {
+     fetchPlayer();
+   }, [fetchPlayer]);
+
+   // Check if player is in watchlist
+   useEffect(() => {
+     if (session && player) {
+       checkWatchlistStatus();
+     }
+   }, [session, player]);
+
+   const checkWatchlistStatus = async () => {
+     if (!player) return;
+     try {
+       const response = await fetch("/api/watchlist");
+       if (response.ok) {
+         const data = await response.json();
+         const isInList = data.players?.some((p: any) => p.id === player.id);
+         setIsInWatchlist(isInList || false);
+       }
+     } catch (error) {
+       console.error("Failed to check watchlist status:", error);
+     }
+   };
+
+   const toggleWatchlist = async () => {
+     if (!session) {
+       window.location.href = "/login";
+       return;
+     }
+
+     if (!player) return;
+
+     setWatchlistLoading(true);
+     try {
+       const response = await fetch("/api/watchlist", {
+         method: "POST",
+         headers: {
+           "Content-Type": "application/json",
+         },
+         body: JSON.stringify({ type: "player", id: player.id }),
+       });
+
+       if (response.ok) {
+         setIsInWatchlist(!isInWatchlist);
+       } else {
+         alert("Failed to update watchlist");
+       }
+     } catch (error) {
+       console.error("Failed to toggle watchlist:", error);
+       alert("An error occurred");
+     } finally {
+       setWatchlistLoading(false);
+     }
+   };
 
   const getPositionSpecificStats = () => {
     if (!player || player.stats.length === 0) return null;
@@ -390,9 +446,38 @@ export default function PlayerPage({ params }: PlayerPageProps) {
                     </Link>
                   )}
                 </div>
-              </div>
+               </div>
 
-              {/* Market Value */}
+               {/* Watchlist Button */}
+               {session && (
+                 <div className="mt-2 md:mt-0 md:ml-4">
+                   <button
+                     onClick={toggleWatchlist}
+                     disabled={watchlistLoading}
+                     className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                       isInWatchlist
+                         ? "bg-red-100 text-red-700 hover:bg-red-200 dark:bg-red-900 dark:text-red-300"
+                         : "bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+                     }`}
+                   >
+                     {watchlistLoading ? (
+                       <span className="flex items-center">
+                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
+                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                           <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                         </svg>
+                         Loading...
+                       </span>
+                     ) : isInWatchlist ? (
+                       "Remove from Watchlist"
+                     ) : (
+                       "Add to Watchlist"
+                     )}
+                   </button>
+                 </div>
+               )}
+
+               {/* Market Value */}
               {player.marketValue && (
                 <div className="text-right">
                   <div className="text-sm text-gray-600 dark:text-gray-400">Market Value</div>
