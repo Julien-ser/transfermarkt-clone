@@ -5,14 +5,18 @@ import { updateStaleMarketValues, getMarketValueStats } from "./marketValueUpdat
  * Market Value Update Scheduler
  *
  * Runs automated market value updates on a schedule.
- * Default: Daily at 2:00 AM (服务器低峰期)
+ * Default: Daily at 2:00 AM UTC (server off-peak)
+ * Configurable via MARKET_VALUE_UPDATE_SCHEDULE environment variable
  */
 class MarketValueScheduler {
   private isRunning = false;
   private scheduledJob: cron.ScheduledTask | null = null;
   private readonly DEFAULT_SCHEDULE = "0 2 * * *"; // Daily at 2 AM
 
-  constructor(private schedule: string = this.DEFAULT_SCHEDULE) {}
+  constructor(private schedule?: string) {
+    // Use provided schedule or fall back to environment variable, then default
+    this.schedule = schedule || process.env.MARKET_VALUE_UPDATE_SCHEDULE || this.DEFAULT_SCHEDULE;
+  }
 
   /**
    * Start the cron job scheduler

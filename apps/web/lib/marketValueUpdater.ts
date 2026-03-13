@@ -1,5 +1,6 @@
 import { PrismaClient, Position, PlayerStats, MarketValue, Player } from "@prisma/client";
 import { subDays, format } from "date-fns";
+import { CACHE_KEYS, cache } from "./cache";
 
 const prisma = new PrismaClient();
 
@@ -219,19 +220,27 @@ export async function updateAllMarketValues(): Promise<{
           },
         });
 
-        // Create historical market value record
-        await prisma.marketValue.create({
-          data: {
-            playerId: player.id,
-            value: result.newValue,
-            currency: "EUR",
-            date: new Date(),
-            source: "Automated Update",
-          },
-        });
+         // Create historical market value record
+         await prisma.marketValue.create({
+           data: {
+             playerId: player.id,
+             value: result.newValue,
+             currency: "EUR",
+             date: new Date(),
+             source: "Automated Update",
+           },
+         });
 
-        updated++;
-        changes.push(result.changePercentage);
+         // Invalidate caches for this player
+         try {
+           await cache.del(CACHE_KEYS.player(player.id.toString()));
+           await cache.invalidatePattern("players:*");
+         } catch (error) {
+           console.error(`Cache invalidation failed for player ${player.id}:`, error);
+         }
+
+         updated++;
+         changes.push(result.changePercentage);
       } else {
         errors++;
       }
@@ -293,18 +302,26 @@ export async function updateStaleMarketValues(daysThreshold: number = 7): Promis
           },
         });
 
-        await prisma.marketValue.create({
-          data: {
-            playerId: player.id,
-            value: result.newValue,
-            currency: "EUR",
-            date: new Date(),
-            source: "Automated Update",
-          },
-        });
+         await prisma.marketValue.create({
+           data: {
+             playerId: player.id,
+             value: result.newValue,
+             currency: "EUR",
+             date: new Date(),
+             source: "Automated Update",
+           },
+         });
 
-        updated++;
-        details.push({ playerId: player.id, changePercentage: result.changePercentage });
+         // Invalidate caches for this player
+         try {
+           await cache.del(CACHE_KEYS.player(player.id.toString()));
+           await cache.invalidatePattern("players:*");
+         } catch (error) {
+           console.error(`Cache invalidation failed for player ${player.id}:`, error);
+         }
+
+         updated++;
+         details.push({ playerId: player.id, changePercentage: result.changePercentage });
       } else {
         errors++;
       }
