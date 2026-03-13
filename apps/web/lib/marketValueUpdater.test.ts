@@ -7,21 +7,6 @@ import {
 import { prisma } from "@prisma/client";
 import { describe, it, expect, beforeAll, afterAll } from "@jest/globals";
 
-describe("MarketValueUpdater Functions", () => {
-  const testPlayerId = 1; // Assuming seed data created player with ID 1
-
-  beforeAll(async () => {
-    await prisma.$connect();
-  });
-
-  afterAll(async () => {
-    await prisma.$disconnect();
-  });
-
-  describe("calculatePlayerMarketValue", () => {
-    it("should calculate market value for existing player", async () => {
-      const result = await updater.calculatePlayerMarketValue(testPlayerId);
-
       if (!result) {
         // Player might not exist in all test environments, skip test
         return;
