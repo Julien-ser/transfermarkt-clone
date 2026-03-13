@@ -1,6 +1,9 @@
-import React from 'react';
+"use client";
 
-export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
+import React from 'react';
+import Image from 'next/image';
+
+export interface AvatarProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   /**
    * The source URL for the avatar image
    */
@@ -39,6 +42,13 @@ export interface AvatarProps extends React.HTMLAttributes<HTMLDivElement> {
   fallback?: React.ReactNode;
 }
 
+const sizeMap = {
+  small: { width: 32, height: 32, fontSize: '12px' },
+  medium: { width: 40, height: 40, fontSize: '14px' },
+  large: { width: 48, height: 48, fontSize: '16px' },
+  xlarge: { width: 64, height: 64, fontSize: '20px' },
+};
+
 const sizeStyles = {
   small: 'w-8 h-8 text-xs',
   medium: 'w-10 h-10 text-sm',
@@ -47,7 +57,9 @@ const sizeStyles = {
 };
 
 /**
- * An avatar component for displaying user profile pictures with fallbacks.
+ * An optimized avatar component for displaying user profile pictures with fallbacks.
+ * Uses Next.js Image component for optimal performance with automatic lazy loading,
+ * WebP/AVIF support, and responsive sizing.
  *
  * @example
  * ```tsx
@@ -72,11 +84,13 @@ export const Avatar: React.FC<AvatarProps> = ({
   ...props
 }) => {
   const [imgError, setImgError] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(true);
 
   const hasImage = src && !imgError;
   const showFallback = !hasImage && (fallback || initials);
 
   const shapeStyles = circular ? 'rounded-full' : 'rounded-md';
+  const { width, height } = sizeMap[size];
 
   const baseStyles = `inline-flex items-center justify-center font-semibold ${sizeStyles[size]} ${shapeStyles} ${className}`;
 
@@ -103,20 +117,40 @@ export const Avatar: React.FC<AvatarProps> = ({
     );
   };
 
+  const handleLoadingComplete = () => {
+    setIsLoading(false);
+  };
+
+  const handleError = () => {
+    setImgError(true);
+    setIsLoading(false);
+  };
+
   if (hasImage) {
     return (
       <div
-        className={`${baseStyles} overflow-hidden bg-gray-200 dark:bg-gray-700`}
+        className={`${baseStyles} overflow-hidden bg-gray-200 dark:bg-gray-700 relative`}
         role="img"
         aria-label={alt || 'Avatar'}
         {...props}
       >
-        <img
+        <Image
           src={src}
-          alt={alt}
-          className="w-full h-full object-cover"
-          onError={() => setImgError(true)}
+          alt={alt || 'Avatar'}
+          width={width}
+          height={height}
+          sizes="(max-width: 768px) 32px, (max-width: 1024px) 40px, 48px"
+          className={`w-full h-full object-cover transition-opacity duration-200 ${
+            isLoading ? 'opacity-0' : 'opacity-100'
+          }`}
+          onLoadingComplete={handleLoadingComplete}
+          onError={handleError}
+          loading="lazy"
+          priority={size === 'xlarge' ? true : false}
         />
+        {isLoading && (
+          <div className="absolute inset-0 bg-gray-300 dark:bg-gray-600 animate-pulse" />
+        )}
       </div>
     );
   }
