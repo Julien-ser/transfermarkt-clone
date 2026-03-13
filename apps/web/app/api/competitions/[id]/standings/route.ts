@@ -28,26 +28,53 @@ export async function GET(
       cacheKey,
       CACHE_TTL.LEAGUE_STANDINGS,
       async () => {
-        // Build where clause
-        const where: any = {
+        // Build where clause for matches
+        const matchWhere: any = {
           competitionId,
+          status: "FINISHED",
         };
 
         if (seasonId) {
-          where.seasonId = parseInt(seasonId);
+          matchWhere.seasonId = parseInt(seasonId);
         } else {
           // Default to current season
           const currentSeason = await prisma.season.findFirst({
             where: { isCurrent: true },
           });
           if (currentSeason) {
-            where.seasonId = currentSeason.id;
+            matchWhere.seasonId = currentSeason.id;
           }
         }
 
-        // Fetch club seasons with club and season data
-        const clubSeasons = await prisma.clubSeason.findMany({
-          where,
+        // Fetch all finished matches for this competition/season
+        const matches = await prisma.match.findMany({
+          where: matchWhere,
+          include: {
+            homeClub: {
+              include: {
+                country: true,
+              },
+            },
+            awayClub: {
+              include: {
+                country: true,
+              },
+            },
+          },
+          orderBy: {
+            matchDate: "asc",
+          },
+        });
+
+        // Get the season we're querying
+        const targetSeasonId = matchWhere.seasonId;
+        
+        // Fetch clubs participating in this competition/season via ClubCompetition
+        const clubCompetitions = await prisma.clubCompetition.findMany({
+          where: {
+            competitionId,
+            seasonId: targetSeasonId,
+          },
           include: {
             club: {
               include: {
@@ -56,31 +83,166 @@ export async function GET(
             },
             season: true,
           },
-          orderBy: {
-            rank: "asc",
+        });
+
+        // Fetch ClubSeason data for these clubs in this season
+        const clubIds = clubCompetitions.map(cc => cc.clubId);
+        const clubSeasons = await prisma.clubSeason.findMany({
+          where: {
+            seasonId: targetSeasonId,
+            clubId: {
+              in: clubIds,
+            },
           },
         });
 
-        // Transform data for standings format
-        const standings = clubSeasons.map((cs) => ({
-          rank: cs.rank,
-          club: {
-            id: cs.club.id,
-            name: cs.club.name,
-            shortName: cs.club.shortName,
-            slug: cs.club.slug,
-            logoUrl: cs.club.logoUrl,
-            country: cs.club.country,
-          },
-          season: {
-            id: cs.season.id,
-            year: cs.season.year,
-          },
-          points: cs.points || 0,
-          averageAge: cs.averageAge,
-          totalMarketValue: cs.totalMarketValue,
-          foreignPlayers: cs.foreignPlayers,
-        }));
+        // Create a map for quick lookup
+        const clubSeasonMap = new Map<number, typeof clubSeasons[0]>();
+        clubSeasons.forEach(cs => clubSeasonMap.set(cs.clubId, cs));
+
+        // Calculate standings for each club
+        const standings = clubCompetitions.map((cc) => {
+          const clubId = cc.club.id;
+          const clubMatches = matches.filter(
+            (m) => m.homeClubId === clubId || m.awayClubId === clubId
+          );
+
+          // Initialize stats
+          const stats = {
+            played: 0,
+            home: { played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0 },
+            away: { played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0 },
+          };
+
+          // Calculate stats from matches
+          clubMatches.forEach((match) => {
+            const isHome = match.homeClubId === clubId;
+            const clubScore = isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+            const opponentScore = isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
+
+            // Update total played
+            stats.played++;
+
+            // Update home/away stats
+            if (isHome) {
+              stats.home.played++;
+              stats.home.gf += clubScore;
+              stats.home.ga += opponentScore;
+              if (clubScore > opponentScore) {
+                stats.home.won++;
+              } else if (clubScore === opponentScore) {
+                stats.home.drawn++;
+              } else {
+                stats.home.lost++;
+              }
+            } else {
+              stats.away.played++;
+              stats.away.gf += clubScore;
+              stats.away.ga += opponentScore;
+              if (clubScore > opponentScore) {
+                stats.away.won++;
+              } else if (clubScore === opponentScore) {
+                stats.away.drawn++;
+              } else {
+                stats.away.lost++;
+              }
+            }
+          });
+
+          // Calculate totals
+          const totalWon = stats.home.won + stats.away.won;
+          const totalDrawn = stats.home.drawn + stats.away.drawn;
+          const totalLost = stats.home.lost + stats.away.lost;
+          const totalGf = stats.home.gf + stats.away.gf;
+          const totalGa = stats.home.ga + stats.away.ga;
+          const totalPoints = totalWon * 3 + totalDrawn;
+
+          // Get form from last 5 matches
+          const recentMatches = [...clubMatches]
+            .sort((a, b) => new Date(b.matchDate).getTime() - new Date(a.matchDate).getTime())
+            .slice(0, 5)
+            .map((match) => {
+              const isHome = match.homeClubId === clubId;
+              const clubScore = isHome ? (match.homeScore ?? 0) : (match.awayScore ?? 0);
+              const opponentScore = isHome ? (match.awayScore ?? 0) : (match.homeScore ?? 0);
+              
+              let result: 'W' | 'D' | 'L' = 'L';
+              if (clubScore > opponentScore) result = 'W';
+              else if (clubScore === opponentScore) result = 'D';
+              
+              return {
+                result,
+                isHome,
+                opponent: isHome ? match.awayClub.name : match.homeClub.name,
+                date: match.matchDate,
+              };
+            });
+
+          const clubSeasonData = clubSeasonMap.get(clubId);
+
+          return {
+            rank: clubSeasonData?.rank || 0,
+            club: {
+              id: cc.club.id,
+              name: cc.club.name,
+              shortName: cc.club.shortName,
+              slug: cc.club.slug,
+              logoUrl: cc.club.logoUrl,
+              country: cc.club.country,
+            },
+            season: {
+              id: cc.season.id,
+              year: cc.season.year,
+            },
+            // Total stats
+            played: stats.played,
+            won: totalWon,
+            drawn: totalDrawn,
+            lost: totalLost,
+            gf: totalGf,
+            ga: totalGa,
+            gd: totalGf - totalGa,
+            points: clubSeasonData?.points || totalPoints,
+            // Home stats
+            home: {
+              played: stats.home.played,
+              won: stats.home.won,
+              drawn: stats.home.drawn,
+              lost: stats.home.lost,
+              gf: stats.home.gf,
+              ga: stats.home.ga,
+              gd: stats.home.gf - stats.home.ga,
+            },
+            // Away stats
+            away: {
+              played: stats.away.played,
+              won: stats.away.won,
+              drawn: stats.away.drawn,
+              lost: stats.away.lost,
+              gf: stats.away.gf,
+              ga: stats.away.ga,
+              gd: stats.away.gf - stats.away.ga,
+            },
+            // Additional data from ClubSeason
+            averageAge: clubSeasonData?.averageAge,
+            totalMarketValue: clubSeasonData?.totalMarketValue,
+            foreignPlayers: clubSeasonData?.foreignPlayers,
+            // Recent form
+            form: recentMatches,
+          };
+        });
+
+        // Sort by points (desc), then goal difference (desc), then goals for (desc)
+        standings.sort((a, b) => {
+          if (b.points !== a.points) return b.points - a.points;
+          if (b.gd !== a.gd) return b.gd - a.gd;
+          return b.gf - a.gf;
+        });
+
+        // Update ranks after sorting
+        standings.forEach((s, index) => {
+          s.rank = index + 1;
+        });
 
         return standings;
       }
