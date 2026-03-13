@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { competitionUpdateSchema } from "@/lib/validations";
+import { withCache, CACHE_TTL, CACHE_KEYS, cache } from "@/lib/cache";
 
 const prisma = new PrismaClient();
 
@@ -17,50 +18,61 @@ export async function GET(
       return NextResponse.json({ error: "Invalid competition ID" }, { status: 400 });
     }
 
-    const competition = await prisma.competition.findUnique({
-      where: { id: competitionId },
-      include: {
-        country: true,
-        seasons: {
-          orderBy: { startDate: "desc" },
-        },
-        clubs: {
+    // Generate cache key
+    const cacheKey = CACHE_KEYS.competition(competitionId.toString());
+
+    // Try to get from cache first
+    const { data: competition, fromCache } = await withCache(
+      cacheKey,
+      CACHE_TTL.COMPETITION_DETAIL,
+      async () => {
+        const competition = await prisma.competition.findUnique({
+          where: { id: competitionId },
           include: {
-            club: {
+            country: true,
+            seasons: {
+              orderBy: { startDate: "desc" },
+            },
+            clubs: {
               include: {
-                country: true,
+                club: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
               },
             },
-            season: true,
-          },
-        },
-        matches: {
-          include: {
-            homeClub: {
+            matches: {
               include: {
-                country: true,
+                homeClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                awayClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
               },
-            },
-            awayClub: {
-              include: {
-                country: true,
+              orderBy: {
+                matchDate: "desc",
               },
+              take: 50,
             },
-            season: true,
           },
-          orderBy: {
-            matchDate: "desc",
-          },
-          take: 50,
-        },
-      },
-    });
+        });
+        return competition;
+      }
+    );
 
     if (!competition) {
       return NextResponse.json({ error: "Competition not found" }, { status: 404 });
     }
 
-    return NextResponse.json(competition);
+    return NextResponse.json({ ...competition, fromCache });
   } catch (error) {
     console.error("Competition fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -112,6 +124,11 @@ export async function PUT(
         seasons: true,
       },
     });
+
+    // Invalidate related caches
+    await cache.del(CACHE_KEYS.competition(competitionId.toString()));
+    await cache.invalidatePattern("competitions:*");
+    await cache.invalidatePattern("clubs:*"); // Club-competition relationships may change
 
     return NextResponse.json(competition);
   } catch (error) {
@@ -170,6 +187,11 @@ export async function DELETE(
     await prisma.competition.delete({
       where: { id: competitionId },
     });
+
+    // Invalidate related caches
+    await cache.del(CACHE_KEYS.competition(competitionId.toString()));
+    await cache.invalidatePattern("competitions:*");
+    await cache.invalidatePattern("clubs:*"); // Club-competition relationships
 
     return NextResponse.json({ message: "Competition deleted successfully" });
   } catch (error) {

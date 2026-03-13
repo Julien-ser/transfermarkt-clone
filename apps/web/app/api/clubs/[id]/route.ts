@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { clubUpdateSchema } from "@/lib/validations";
+import { withCache, CACHE_TTL, CACHE_KEYS, cache } from "@/lib/cache";
 
 const prisma = new PrismaClient();
 
@@ -17,129 +18,140 @@ export async function GET(
       return NextResponse.json({ error: "Invalid club ID" }, { status: 400 });
     }
 
-    const club = await prisma.club.findUnique({
-      where: { id: clubId },
-      include: {
-        country: true,
-        currentPlayers: {
+    // Generate cache key
+    const cacheKey = CACHE_KEYS.club(clubId.toString());
+
+    // Try to get from cache first
+    const { data: club, fromCache } = await withCache(
+      cacheKey,
+      CACHE_TTL.CLUB_DETAIL,
+      async () => {
+        const club = await prisma.club.findUnique({
+          where: { id: clubId },
           include: {
-            nationality: true,
-            position: true,
-          },
-          orderBy: {
-            jerseyNumber: "asc",
-          },
-        },
-        seasons: {
-          include: {
-            season: true,
-          },
-          orderBy: {
-            season: {
-              startDate: "desc",
-            },
-          },
-        },
-        competitions: {
-          include: {
-            competition: true,
-            season: true,
-          },
-        },
-        transfersFrom: {
-          include: {
-            player: {
+            country: true,
+            currentPlayers: {
               include: {
                 nationality: true,
                 position: true,
               },
-            },
-            toClub: {
-              include: {
-                country: true,
+              orderBy: {
+                jerseyNumber: "asc",
               },
             },
-            season: true,
-          },
-          orderBy: {
-            transferDate: "desc",
-          },
-          take: 50,
-        },
-        transfersTo: {
-          include: {
-            player: {
+            seasons: {
               include: {
-                nationality: true,
-                position: true,
+                season: true,
+              },
+              orderBy: {
+                season: {
+                  startDate: "desc",
+                },
               },
             },
-            fromClub: {
+            competitions: {
               include: {
-                country: true,
+                competition: true,
+                season: true,
               },
             },
-            season: true,
-          },
-          orderBy: {
-            transferDate: "desc",
-          },
-          take: 50,
-        },
-        homeMatches: {
-          include: {
-            competition: true,
-            season: true,
-            awayClub: {
+            transfersFrom: {
               include: {
-                country: true,
+                player: {
+                  include: {
+                    nationality: true,
+                    position: true,
+                  },
+                },
+                toClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
+              },
+              orderBy: {
+                transferDate: "desc",
+              },
+              take: 50,
+            },
+            transfersTo: {
+              include: {
+                player: {
+                  include: {
+                    nationality: true,
+                    position: true,
+                  },
+                },
+                fromClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
+              },
+              orderBy: {
+                transferDate: "desc",
+              },
+              take: 50,
+            },
+            homeMatches: {
+              include: {
+                competition: true,
+                season: true,
+                awayClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+              },
+              orderBy: {
+                matchDate: "desc",
+              },
+              take: 10,
+            },
+            awayMatches: {
+              include: {
+                competition: true,
+                season: true,
+                homeClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+              },
+              orderBy: {
+                matchDate: "desc",
+              },
+              take: 10,
+            },
+            playerStats: {
+              include: {
+                player: {
+                  include: {
+                    nationality: true,
+                    position: true,
+                  },
+                },
+                season: true,
+              },
+              orderBy: {
+                season: {
+                  startDate: "desc",
+                },
               },
             },
           },
-          orderBy: {
-            matchDate: "desc",
-          },
-          take: 10,
-        },
-        awayMatches: {
-          include: {
-            competition: true,
-            season: true,
-            homeClub: {
-              include: {
-                country: true,
-              },
-            },
-          },
-          orderBy: {
-            matchDate: "desc",
-          },
-          take: 10,
-        },
-        playerStats: {
-          include: {
-            player: {
-              include: {
-                nationality: true,
-                position: true,
-              },
-            },
-            season: true,
-          },
-          orderBy: {
-            season: {
-              startDate: "desc",
-            },
-          },
-        },
-      },
-    });
+        });
+        return club;
+      }
+    );
 
     if (!club) {
       return NextResponse.json({ error: "Club not found" }, { status: 404 });
     }
 
-    return NextResponse.json(club);
+    return NextResponse.json({ ...club, fromCache });
   } catch (error) {
     console.error("Club fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -196,6 +208,11 @@ export async function PUT(
         },
       },
     });
+
+    // Invalidate related caches
+    await cache.del(CACHE_KEYS.club(clubId.toString()));
+    await cache.invalidatePattern("clubs:*");
+    await cache.invalidatePattern("players:*"); // Players list may be filtered by club
 
     return NextResponse.json(club);
   } catch (error) {
@@ -254,6 +271,11 @@ export async function DELETE(
     await prisma.club.delete({
       where: { id: clubId },
     });
+
+    // Invalidate related caches
+    await cache.del(CACHE_KEYS.club(clubId.toString()));
+    await cache.invalidatePattern("clubs:*");
+    await cache.invalidatePattern("players:*"); // Players filtered by currentClubId
 
     return NextResponse.json({ message: "Club deleted successfully" });
   } catch (error) {

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@prisma/client";
 import { playerUpdateSchema } from "@/lib/validations";
+import { withCache, CACHE_TTL, CACHE_KEYS, cache } from "@/lib/cache";
 
 const prisma = new PrismaClient();
 
@@ -17,73 +18,84 @@ export async function GET(
       return NextResponse.json({ error: "Invalid player ID" }, { status: 400 });
     }
 
-    const player = await prisma.player.findUnique({
-      where: { id: playerId },
-      include: {
-        nationality: true,
-        position: true,
-        currentClub: {
+    // Generate cache key
+    const cacheKey = CACHE_KEYS.player(playerId.toString());
+
+    // Try to get from cache first
+    const { data: player, fromCache } = await withCache(
+      cacheKey,
+      CACHE_TTL.PLAYER_DETAIL,
+      async () => {
+        const player = await prisma.player.findUnique({
+          where: { id: playerId },
           include: {
-            country: true,
-          },
-        },
-        birthPlace: true,
-        clubs: {
-          include: {
-            club: {
+            nationality: true,
+            position: true,
+            currentClub: {
               include: {
                 country: true,
               },
             },
-            season: true,
-          },
-          orderBy: {
-            joinedDate: "desc",
-          },
-        },
-        transfers: {
-          include: {
-            fromClub: {
+            birthPlace: true,
+            clubs: {
               include: {
-                country: true,
+                club: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
+              },
+              orderBy: {
+                joinedDate: "desc",
               },
             },
-            toClub: {
+            transfers: {
               include: {
-                country: true,
+                fromClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                toClub: {
+                  include: {
+                    country: true,
+                  },
+                },
+                season: true,
+              },
+              orderBy: {
+                transferDate: "desc",
               },
             },
-            season: true,
-          },
-          orderBy: {
-            transferDate: "desc",
-          },
-        },
-        stats: {
-          include: {
-            club: true,
-            season: true,
-          },
-          orderBy: {
-            season: {
-              startDate: "desc",
+            stats: {
+              include: {
+                club: true,
+                season: true,
+              },
+              orderBy: {
+                season: {
+                  startDate: "desc",
+                },
+              },
+            },
+            marketValues: {
+              orderBy: {
+                date: "desc",
+              },
+              take: 50,
             },
           },
-        },
-        marketValues: {
-          orderBy: {
-            date: "desc",
-          },
-          take: 50,
-        },
-      },
-    });
+        });
+        return player;
+      }
+    );
 
     if (!player) {
       return NextResponse.json({ error: "Player not found" }, { status: 404 });
     }
 
-    return NextResponse.json(player);
+    return NextResponse.json({ ...player, fromCache });
   } catch (error) {
     console.error("Player fetch error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
@@ -150,6 +162,16 @@ export async function PUT(
         birthPlace: true,
       },
     });
+
+    // Invalidate related caches
+    await cache.del(CACHE_KEYS.player(playerId.toString()));
+    await cache.invalidatePattern("players:*"); // Players list and other player endpoints
+    if (existingPlayer.currentClubId) {
+      await cache.invalidatePattern(CACHE_KEYS.club(existingPlayer.currentClubId.toString()));
+    }
+    if (validatedData.currentClubId) {
+      await cache.invalidatePattern(CACHE_KEYS.club(validatedData.currentClubId.toString()));
+    }
 
     return NextResponse.json(player);
   } catch (error) {
